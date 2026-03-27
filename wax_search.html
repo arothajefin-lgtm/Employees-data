@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search - Compound Wax</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    <style>
+        body { font-family: -apple-system, sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; padding: 20px; color: #333; }
+        .container { width: 100%; max-width: 500px; background: white; padding: 25px; border-radius: 16px; box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+        .input-group { position: relative; margin-bottom: 12px; }
+        .input-box { width: 100%; padding: 14px 15px 14px 45px; font-size: 16px; border: 2px solid #ddd; border-radius: 10px; box-sizing: border-box; text-transform: uppercase; font-weight: 600; }
+        .input-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #7f8c8d; }
+        #suggestions { border: 1px solid #ddd; border-radius: 8px; margin-top: 5px; background: white; max-height: 200px; overflow-y: auto; }
+        .suggest-item { padding: 12px; border-bottom: 1px solid #eee; cursor: pointer; font-weight: 600; }
+        #resultBox { display:none; margin-top:20px; text-align:center; background:#e8f6f3; padding:20px; border-radius:12px; }
+        .footer-credit { text-align: center; font-size: 13px; color: #3498db; margin-top: 20px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="text-align:center;">Compound wax Search</h1>
+        <div class="input-group">
+            <span class="input-icon">🔍</span>
+            <input type="text" id="mainSearch" class="input-box" placeholder="Search Code..." oninput="showSuggestions(this.value)">
+            <div id="suggestions" style="display:none;"></div>
+        </div>
+        <div id="resultBox">
+            <div id="resCode" style="font-weight:bold; color:#2c3e50; font-size: 18px;"></div>
+            <div style="font-size:45px; font-weight:900; margin-top:10px;"><span id="resWeight">0.00</span> kg</div>
+        </div>
+        <div class="footer-credit">Developed by Jefin</div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+  apiKey: "AIzaSyB4akOCR4LTOK6HyvnxwMc7SKpbrMzjNC0",
+  authDomain: "compound-workaway.firebaseapp.com",
+  databaseURL: "https://compound-workaway-default-rtdb.firebaseio.com",
+  projectId: "compound-workaway",
+  storageBucket: "compound-workaway.firebasestorage.app",
+  messagingSenderId: "1020479561110",
+  appId: "1:1020479561110:web:f1cb9448e2bcf9184811b7"};
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        let db = {};
+
+        database.ref('w').on('value', (snapshot) => { db = snapshot.val() || {}; });
+
+        function showSuggestions(val) {
+            const container = document.getElementById('suggestions');
+            val = val.toUpperCase().trim();
+            container.innerHTML = '';
+            if (!val) { container.style.display = 'none'; return; }
+            const matches = Object.keys(db).filter(code => code.replace(/_/g, '.').includes(val));
+            if (matches.length > 0) {
+                container.style.display = 'block';
+                matches.forEach(code => {
+                    const displayCode = code.replace(/_/g, '.');
+                    const div = document.createElement('div');
+                    div.className = 'suggest-item';
+                    div.innerText = displayCode;
+                    div.onclick = () => {
+                        document.getElementById('mainSearch').value = displayCode;
+                        container.style.display = 'none';
+                        document.getElementById('resCode').innerText = displayCode;
+                        document.getElementById('resWeight').innerText = db[code];
+                        document.getElementById('resultBox').style.display = 'block';
+                    };
+                    container.appendChild(div);
+                });
+            } else { container.style.display = 'none'; }
+        }
+    </script>
+</body>
+</html>

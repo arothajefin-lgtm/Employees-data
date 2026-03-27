@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ml">
+<head>
+    <meta charset="UTF-8">
+    <title>Employee Usage Entry</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #eceff1; padding: 10px; margin: 0; }
+        .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #333; margin: 5px 0; font-size: 20px; }
+        label { font-weight: bold; display: block; margin-top: 12px; color: #555; font-size: 14px; }
+        input, select { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        
+        #stockList { max-height: 250px; overflow-y: auto; margin-top: 10px; border: 1px solid #eee; border-radius: 8px; background: #fafafa; }
+        .stock-item { 
+            background: #fff; border: 1px solid #ddd; padding: 12px; margin: 6px; 
+            border-radius: 8px; cursor: pointer; transition: 0.2s;
+        }
+        .stock-item.selected { border: 2px solid #007bff; background: #e3f2fd; }
+        
+        .compound-header { font-weight: bold; font-size: 15px; color: #000; display: block; margin-bottom: 4px; }
+        .batch-info { font-size: 12px; color: #666; }
+        .bal-badge { float: right; background: #ffebee; color: #d32f2f; padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 13px; }
+
+        button { 
+            width: 100%; padding: 15px; background: #28a745; color: white; border: none; 
+            border-radius: 8px; font-weight: bold; font-size: 18px; margin-top: 20px; cursor: pointer;
+        }
+        button:active { background: #218838; opacity: 0.9; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Usage Entry</h2>
+    
+    <label>Date of Usage</label>
+    <input type="date" id="usageDate">
+
+    <label>Employee ID</label>
+    <input type="text" id="empID" placeholder="Enter Your ID">
+
+    <label>Shift</label>
+    <select id="empShift">
+        <option value="A">A Shift</option>
+        <option value="B">B Shift</option>
+        <option value="C">C Shift</option>
+    </select>
+
+    <label>Select Compound (Active Stock)</label>
+    <div id="stockList">
+        <p style="text-align:center; padding:10px; color:#999;">Loading stock...</p>
+    </div>
+    <input type="hidden" id="selectedKey">
+
+    <label>Quantity to Use</label>
+    <input type="number" id="qtyToUse" step="0.5" placeholder="Enter Quantity">
+
+    <button onclick="updateUsage()">UPDATE USAGE</button>
+</div>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyB4akOCR4LTOK6HyvnxwMc7SKpbrMzjNC0",
+        authDomain: "compound-workaway.firebaseapp.com",
+        databaseURL: "https://compound-workaway-default-rtdb.firebaseio.com",
+        projectId: "compound-workaway",
+        storageBucket: "compound-workaway.firebasestorage.app",
+        messagingSenderId: "1020479561110",
+        appId: "1:1020479561110:web:f1cb9448e2bcf9184811b7"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    
+    document.getElementById('usageDate').valueAsDate = new Date();
+
+    db.ref('compounds').on('value', (snapshot) => {
+        const data = snapshot.val();
+        const listDiv = document.getElementById('stockList');
+        listDiv.innerHTML = "";
+
+        if(!data) {
+            listDiv.innerHTML = "<p style='text-align:center; padding:10px;'>No active stock.</p>";
+            return;
+        }
+
+        for(let key in data) {
+            const item = data[key];
+            if(item.balance <= 0) continue; 
+
+            const div = document.createElement('div');
+            div.className = 'stock-item';
+            div.id = 'item-' + key;
+            div.onclick = () => {
+                const items = document.getElementsByClassName('stock-item');
+                for(let i=0; i<items.length; i++) items[i].classList.remove('selected');
+                div.classList.add('selected');
+                document.getElementById('selectedKey').value = key;
+            };
+            
+            // ഫോർമാറ്റ് തിരുത്തി: Dt/Sh/Sk: 26A-1
+            div.innerHTML = `
+                <span class="bal-badge">${item.balance} Left</span>
+                <span class="compound-header">${item.code} | W/A ${item.wa} @ IPO: ${item.ipo || 'N/A'} (Mixing For: ${item.mixingFor || 'N/A'})</span>
+                <div class="batch-info">
+                    Dt/Sh/Sk: ${item.displayTag}-${item.skidNo}
+                </div>
+            `;
+            listDiv.appendChild(div);
+        }
+    });
+
+    function updateUsage() {
+        const empID = document.getElementById('empID').value.trim();
+        const usedQty = parseFloat(document.getElementById('qtyToUse').value);
+        const key = document.getElementById('selectedKey').value;
+        const shift = document.getElementById('empShift').value;
+        const customDate = document.getElementById('usageDate').value;
+
+        if(!empID || !key || !usedQty || !customDate) {
+            return alert("എല്ലാ വിവരങ്ങളും കൃത്യമായി നൽകുക!");
+        }
+
+        db.ref('compounds/' + key).once('value', (snap) => {
+            const data = snap.val();
+            if(usedQty > data.balance) {
+                return alert("Balance: " + data.balance + " മാത്രമേ ഉള്ളൂ!");
+            }
+
+            const newBalance = (data.balance - usedQty).toFixed(1);
+            const now = new Date();
+            const timeStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+            
+            const d = new Date(customDate);
+            const formattedDate = d.getDate().toString().padStart(2, '0') + "/" + (d.getMonth() + 1).toString().padStart(2, '0') + "/" + d.getFullYear();
+
+            db.ref('compounds/' + key).update({
+                balance: parseFloat(newBalance)
+            });
+
+            db.ref('compounds/' + key + '/usageHistory').push({
+                empID: empID,
+                usedQty: usedQty,
+                date: formattedDate,
+                time: timeStr,
+                shift: shift,
+                timestamp: Date.now()
+            }).then(() => {
+                alert("വിജയകരമായി അപ്‌ഡേറ്റ് ചെയ്തു!");
+                document.getElementById('qtyToUse').value = "";
+            });
+        });
+    }
+</script>
+</body>
+</html>
