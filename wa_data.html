@@ -2,85 +2,74 @@
 <html lang="ml">
 <head>
     <meta charset="UTF-8">
-    <title>Officers Master Control</title>
+    <title>Employee Usage Entry</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 10px; margin: 0; }
-        .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 15px; }
-        #openStockBtn { background: #007bff; color: white; width: 100%; padding: 15px; font-size: 16px; margin-bottom: 10px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        #combinedPdfBtn { background: #e91e63; color: white; width: 100%; margin-bottom: 10px; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
-        .modal-content { background: white; margin: 10% auto; padding: 20px; border-radius: 12px; width: 90%; max-width: 450px; position: relative; }
-        .close-btn { position: absolute; right: 15px; top: 10px; font-size: 24px; cursor: pointer; color: #666; }
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .full { grid-column: span 2; }
-        label { font-weight: bold; font-size: 13px; color: #555; }
-        input, select { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 15px; }
-        button { flex: 1; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 15px; }
-        #saveBtn { background: #007bff; color: white; margin-top: 10px; }
-        #updateBtn { background: #ff9800; color: white; display: none; margin-top: 10px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; font-size: 11px; }
-        th, td { padding: 8px 4px; border: 1px solid #eee; text-align: center; }
-        th { background: #333; color: white; }
-        .log-item { font-size: 12px; padding: 12px 10px; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .shift-A { background-color: #e8f5e9; border-left: 6px solid #2e7d32; }
-        .shift-B { background-color: #e3f2fd; border-left: 6px solid #1565c0; }
-        .shift-C { background-color: #fffde7; border-left: 6px solid #fbc02d; }
-        .log-row { display: flex; justify-content: space-between; align-items: center; }
-        .log-id { color: #333; font-weight: bold; font-size: 14px; }
-        .log-qty { background: rgba(255,255,255,0.8); color: #d32f2f; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; border: 1px solid #ffcdd2; }
-        .log-meta { color: #444; font-size: 11px; margin-top: 6px; line-height: 1.5; }
-        .edit-btn { background: #ffc107; color: black; border: none; padding: 5px; border-radius: 4px; font-weight: bold; }
-        .verified-btn { background: #28a745; color: white; border-radius: 4px; padding: 6px; border:none; width: 100%; font-weight: bold; }
-        .verified-btn.disabled { background: #ccc; cursor: not-allowed; }
+        body { font-family: 'Segoe UI', sans-serif; background: #eceff1; padding: 10px; margin: 0; }
+        .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #333; margin: 5px 0; font-size: 20px; }
+        label { font-weight: bold; display: block; margin-top: 12px; color: #555; font-size: 14px; }
+        input, select { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        
+        #stockList { max-height: 280px; overflow-y: auto; margin-top: 10px; border: 1px solid #eee; border-radius: 8px; background: #fafafa; }
+        .stock-item { 
+            background: #fff; border: 1px solid #ddd; padding: 12px; margin: 6px; 
+            border-radius: 8px; cursor: pointer; transition: 0.2s;
+        }
+        .stock-item.selected { border: 2px solid #007bff; background: #e3f2fd; }
+        
+        .compound-header { font-weight: bold; font-size: 15px; color: #000; display: block; margin-bottom: 4px; }
+        
+        /* വിവരങ്ങൾ ഒരേ വരിയിൽ വരാനുള്ള സ്റ്റൈൽ */
+        .batch-info-row { 
+            display: flex; 
+            justify-content: space-between; 
+            font-size: 12px; 
+            color: #444; 
+            margin-top: 8px;
+            padding-top: 6px;
+            border-top: 1px dotted #ccc;
+        }
+
+        .bal-badge { float: right; background: #ffebee; color: #d32f2f; padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 13px; }
+
+        button { 
+            width: 100%; padding: 15px; background: #28a745; color: white; border: none; 
+            border-radius: 8px; font-weight: bold; font-size: 18px; margin-top: 20px; cursor: pointer;
+        }
+        button:active { background: #218838; opacity: 0.9; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <button id="openStockBtn" onclick="toggleModal(true)">ADD NEW STOCK ENTRY</button>
-    <button id="combinedPdfBtn" onclick="downloadCombinedPDF()">DOWNLOAD ALL REPORT (PDF)</button>
-</div>
+    <h2>Usage Entry</h2>
+    
+    <label>Date of Usage</label>
+    <input type="date" id="usageDate">
 
-<div id="stockModal" class="modal">
-    <div class="modal-content">
-        <span class="close-btn" onclick="toggleModal(false)">&times;</span>
-        <h3 id="formTitle" style="text-align:center; margin:0 0 15px 0;">Stock Entry</h3>
-        <div class="form-grid">
-            <input type="hidden" id="editKey">
-            <input type="hidden" id="originalTotalBackup">
-            <div class="full"><label>Compound Code</label><input type="text" id="code" oninput="this.value = this.value.toUpperCase()"></div>
-            <div class="full"><label>Mixing For (Target Code)</label><input type="text" id="mixingFor" oninput="this.value = this.value.toUpperCase()"></div>
-            <div><label>Mixed Date</label><input type="date" id="mixDate"></div>
-            <div><label>Shift</label><select id="shift"><option value="A">A</option><option value="B">B</option><option value="C">C</option></select></div>
-            <div><label>W/A Value</label><div style="display: flex; gap: 4px;"><input type="number" id="waVal"><select id="waUnit" style="width:65px;"><option value="%">%</option><option value="kg">kg</option></select></div></div>
-            <div><label>IPO Selection</label><select id="ipoType"><option value="Compound">Compound</option><option value="Rubber">Rubber</option><option value="Thread">Thread</option><option value="Tread">Tread</option><option value="REWORK">REWORK</option></select></div>
-            <div><label>Total Batches</label><input type="number" id="totalBatches" value="4" step="0.5"></div>
-            <div><label>Skid No</label><select id="skidNum"><script>for(let i=1; i<=30; i++) document.write(`<option value="${i}">${i}</option>`);</script></select></div>
-            
-            <div class="full"><label>Location</label><input type="text" id="location" placeholder="Enter Location"></div>
-            
-            <button id="saveBtn" class="full" onclick="saveData()">SAVE STOCK</button>
-            <button id="updateBtn" class="full" onclick="saveData(true)">UPDATE STOCK</button>
-        </div>
+    <label>Employee ID</label>
+    <input type="text" id="empID" placeholder="Enter Your ID">
+
+    <label>Shift</label>
+    <select id="empShift">
+        <option value="A">A Shift</option>
+        <option value="B">B Shift</option>
+        <option value="C">C Shift</option>
+    </select>
+
+    <label>Select Compound (Active Stock)</label>
+    <div id="stockList">
+        <p style="text-align:center; padding:10px; color:#999;">Loading stock...</p>
     </div>
-</div>
+    <input type="hidden" id="selectedKey">
 
-<div class="card" style="overflow-x: auto; padding: 5px;">
-    <h4>Active Stock</h4>
-    <table>
-        <thead><tr><th>Code / Tag</th><th>W/A & IPO</th><th>Loc & Left</th><th>Edit</th><th>Action</th></tr></thead>
-        <tbody id="tableBody"></tbody>
-    </table>
-</div>
+    <label>Quantity to Use (Batch)</label>
+    <input type="number" id="qtyToUse" step="0.5" placeholder="Enter Quantity in Batch">
 
-<div class="card">
-    <h4>Employee Usage Logs</h4>
-    <div id="usageLogs"></div>
+    <button onclick="updateUsage()">UPDATE USAGE</button>
 </div>
 
 <script>
@@ -95,115 +84,88 @@
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    document.getElementById('mixDate').valueAsDate = new Date();
     
-    let activeStockData = [];
-    let employeeLogData = [];
-
-    function toggleModal(show) {
-        document.getElementById('stockModal').style.display = show ? 'block' : 'none';
-        if(!show) resetForm();
-    }
-
-    function saveData(isUpdate = false) {
-        const code = document.getElementById('code').value.trim();
-        const mixingFor = document.getElementById('mixingFor').value.trim();
-        const waVal = document.getElementById('waVal').value;
-        const wa = waVal + document.getElementById('waUnit').value;
-        const batches = parseFloat(document.getElementById('totalBatches').value);
-        const shift = document.getElementById('shift').value;
-        const skid = document.getElementById('skidNum').value;
-        const location = document.getElementById('location').value.trim() || 'N/A';
-        const ipo = document.getElementById('ipoType').value;
-
-        if(!code || !waVal) return alert("Fill Code and W/A!");
-        
-        const tag = new Date(document.getElementById('mixDate').value).getDate() + shift;
-        const key = isUpdate ? document.getElementById('editKey').value : (code + "_" + tag + skid);
-
-        db.ref('compounds/' + key).update({
-            code, mixingFor, wa, balance: batches, ipo, skidNo: skid, shift, displayTag: tag,
-            location, // ലൊക്കേഷൻ സേവ് ചെയ്യുന്നു
-            originalTotal: isUpdate ? parseFloat(document.getElementById('originalTotalBackup').value) : batches
-        }).then(() => {
-            alert(isUpdate ? "Updated!" : "Saved!");
-            toggleModal(false);
-        });
-    }
+    document.getElementById('usageDate').valueAsDate = new Date();
 
     db.ref('compounds').on('value', (snapshot) => {
         const data = snapshot.val();
-        const tbody = document.getElementById('tableBody');
-        const logDiv = document.getElementById('usageLogs');
-        tbody.innerHTML = ""; logDiv.innerHTML = ""; 
-        activeStockData = []; employeeLogData = [];
-        if(!data) return;
+        const listDiv = document.getElementById('stockList');
+        listDiv.innerHTML = "";
 
-        let allLogs = [];
-        for(let key in data) {
-            const item = data[key];
-            const isFinished = item.balance <= 0;
-            if(!isFinished) activeStockData.push([item.code, `${item.displayTag}-${item.skidNo}`, item.wa, item.ipo, item.location || 'N/A', item.balance + " Batch"]);
-            
-            tbody.innerHTML += `<tr>
-                <td><b>${item.code}</b><br><small>${item.displayTag}-${item.skidNo}</small></td>
-                <td>${item.wa} | <b>${item.ipo}</b></td>
-                <td><b>${item.location || 'N/A'}</b><br>${item.balance} Batch</td>
-                <td><button class="edit-btn" onclick="editItem('${key}')">Edit</button></td>
-                <td><button class="verified-btn ${!isFinished ? 'disabled' : ''}" onclick="${isFinished ? `db.ref('compounds/${key}').remove()` : ''}">Verify</button></td></tr>`;
-
-            if(item.usageHistory) {
-                let usageArray = Object.values(item.usageHistory).sort((a,b) => a.timestamp - b.timestamp);
-                let currentRunningBal = parseFloat(item.originalTotal) || (usageArray[0] ? (parseFloat(usageArray[0].balance) + parseFloat(usageArray[0].usedQty)) : 0);
-                
-                usageArray.forEach(log => {
-                    currentRunningBal = (currentRunningBal - parseFloat(log.usedQty)).toFixed(1);
-                    allLogs.push({ ...log, compoundCode: item.code, mixingFor: item.mixingFor, wa: item.wa, ipo: item.ipo, location: item.location, calculatedLeft: currentRunningBal });
-                });
-            }
+        if(!data) {
+            listDiv.innerHTML = "<p style='text-align:center; padding:10px;'>No active stock.</p>";
+            return;
         }
 
-        allLogs.sort((a, b) => b.timestamp - a.timestamp).forEach(log => {
-            const statusText = parseFloat(log.calculatedLeft) > 0 ? `Left: ${log.calculatedLeft} Batch` : `Left: NL`;
-            const shiftClass = log.shift === 'A' ? 'shift-A' : (log.shift === 'B' ? 'shift-B' : 'shift-C');
-            employeeLogData.push([log.date, log.empID, log.compoundCode, log.mixingFor, log.ipo, log.usedQty + " Batch", statusText]);
-            logDiv.innerHTML += `<div class="log-item ${shiftClass}"><div class="log-row"><span class="log-id">ID: ${log.empID}</span><span class="log-qty">Used ${log.usedQty} Batch | ${statusText}</span></div>
-                <div class="log-meta"><b>${log.compoundCode}</b> | Loc: ${log.location || 'N/A'}<br>W/A: ${log.wa} | ${log.date} ${log.time}</div></div>`;
-        });
+        for(let key in data) {
+            const item = data[key];
+            if(item.balance <= 0) continue; 
+
+            const div = document.createElement('div');
+            div.className = 'stock-item';
+            div.id = 'item-' + key;
+            div.onclick = () => {
+                const items = document.getElementsByClassName('stock-item');
+                for(let i=0; i<items.length; i++) items[i].classList.remove('selected');
+                div.classList.add('selected');
+                document.getElementById('selectedKey').value = key;
+            };
+            
+            // Skid No: എന്ന് ലേബൽ നൽകി ക്രമീകരിച്ചു
+            div.innerHTML = `
+                <span class="bal-badge">${item.balance} Batch Left</span>
+                <span class="compound-header">${item.code} | W/A ${item.wa}</span>
+                <div style="font-size: 11px; color: #777;">IPO: ${item.ipo || 'N/A'} (For: ${item.mixingFor || 'N/A'})</div>
+                <div class="batch-info-row">
+                    <span><b>Dt/Sh:</b> ${item.displayTag}</span>
+                    <span><b>Skid No:</b> ${item.skidNo}</span>
+                    <span><b>Loc:</b> ${item.location || 'N/A'}</span>
+                </div>
+            `;
+            listDiv.appendChild(div);
+        }
     });
 
-    function downloadCombinedPDF() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        doc.text("Production Report", 14, 15);
-        doc.autoTable({ startY: 25, head: [['Code', 'Tag', 'W/A', 'IPO', 'Location', 'Bal']], body: activeStockData });
-        doc.save("Production_Report.pdf");
-    }
+    function updateUsage() {
+        const empID = document.getElementById('empID').value.trim();
+        const usedQty = parseFloat(document.getElementById('qtyToUse').value);
+        const key = document.getElementById('selectedKey').value;
+        const shift = document.getElementById('empShift').value;
+        const customDate = document.getElementById('usageDate').value;
 
-    function editItem(key) {
+        if(!empID || !key || !usedQty || !customDate) {
+            return alert("എല്ലാ വിവരങ്ങളും കൃത്യമായി നൽകുക!");
+        }
+
         db.ref('compounds/' + key).once('value', (snap) => {
-            const d = snap.val();
-            document.getElementById('code').value = d.code;
-            document.getElementById('mixingFor').value = d.mixingFor || "";
-            document.getElementById('waVal').value = parseFloat(d.wa);
-            document.getElementById('ipoType').value = d.ipo || "Compound";
-            document.getElementById('totalBatches').value = d.balance;
-            document.getElementById('skidNum').value = d.skidNo;
-            document.getElementById('shift').value = d.shift;
-            document.getElementById('location').value = d.location || "";
-            document.getElementById('editKey').value = key;
-            document.getElementById('originalTotalBackup').value = d.originalTotal || d.balance;
-            document.getElementById('saveBtn').style.display = "none";
-            document.getElementById('updateBtn').style.display = "block";
-            toggleModal(true);
-        });
-    }
+            const data = snap.val();
+            if(usedQty > data.balance) {
+                return alert("ശ്രദ്ധിക്കുക: " + data.balance + " Batch മാത്രമേ ബാക്കിയുള്ളൂ!");
+            }
 
-    function resetForm() {
-        document.getElementById('code').value = ""; document.getElementById('mixingFor').value = "";
-        document.getElementById('waVal').value = ""; document.getElementById('editKey').value = "";
-        document.getElementById('location').value = "";
-        document.getElementById('saveBtn').style.display = "block"; document.getElementById('updateBtn').style.display = "none";
+            const newBalance = (data.balance - usedQty).toFixed(1);
+            const now = new Date();
+            const timeStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+            
+            const d = new Date(customDate);
+            const formattedDate = d.getDate().toString().padStart(2, '0') + "/" + (d.getMonth() + 1).toString().padStart(2, '0') + "/" + d.getFullYear();
+
+            db.ref('compounds/' + key).update({
+                balance: parseFloat(newBalance)
+            });
+
+            db.ref('compounds/' + key + '/usageHistory').push({
+                empID: empID,
+                usedQty: usedQty,
+                date: formattedDate,
+                time: timeStr,
+                shift: shift,
+                timestamp: Date.now()
+            }).then(() => {
+                alert(usedQty + " Batch വിജയകരമായി അപ്‌ഡേറ്റ് ചെയ്തു!");
+                document.getElementById('qtyToUse').value = "";
+            });
+        });
     }
 </script>
 </body>
