@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html lang="ml">
+<html lang="en" class="notranslate">
 <head>
     <meta charset="UTF-8">
+    <meta name="google" content="notranslate">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Employee Portal</title>
     <style>
@@ -10,49 +11,31 @@
             font-family: sans-serif; 
             display: flex; 
             flex-direction: column; 
-            align-items: center; /* തിരശ്ചീനമായി മധ്യത്തിൽ */
-            justify-content: center; /* ലംബമായി മധ്യത്തിൽ */
-            min-height: 100vh; /* കണ്ടന്റ് കുറവാണെങ്കിലും സെന്ററിൽ നിൽക്കാൻ */
+            align-items: center; 
+            justify-content: center; 
+            min-height: 100vh; 
             margin: 0; 
-            padding: 20px; /* മൊബൈലിൽ വശങ്ങളിൽ ഗ്യാപ്പ് കിട്ടാൻ */
+            padding: 20px;
             box-sizing: border-box;
         }
-
-        /* ഇമേജ് കണ്ടെയ്നർ - കൃത്യം നടുവിൽ വരാൻ */
         .logo-container {
             display: flex;
             justify-content: center;
             width: 100%;
-            max-width: 400px; /* ഇമേജിന്റെ പരമാവധി വീതി */
-            margin-bottom: 10px; /* ഹെഡിംഗുമായുള്ള അകലം */
+            max-width: 400px;
+            margin-bottom: 10px;
         }
-
-        /* ഹെഡിംഗ് ഇമേജ് സ്റ്റൈൽ */
         .header-logo {
-            width: 100%; /* കണ്ടെയ്നറിന്റെ മുഴുവൻ വീതിയും എടുക്കും */
-            height: auto; /* അനുപാതം നിലനിർത്തും */
+            width: 100%;
+            height: auto;
             cursor: pointer;
-            transition: transform 0.2s, opacity 0.2s;
+            transition: transform 0.2s;
         }
-        .header-logo:hover {
-            transform: scale(1.03);
-            opacity: 0.9;
-        }
-        .header-logo:active {
-            transform: scale(0.98);
-        }
-
-        h1 { 
-            color: white; 
-            margin-top: 0;
-            margin-bottom: 30px; 
-            font-size: 28px;
-            text-align: center;
-        }
-
+        .header-logo:hover { transform: scale(1.03); }
+        h1 { color: white; margin: 0 0 30px 0; font-size: 28px; text-align: center; }
         .btn { 
-            width: 100%; /* മൊബൈലിൽ ഫുൾ വിഡ്ത്ത് */
-            max-width: 320px; /* പരമാവധി വീതി */
+            width: 100%; 
+            max-width: 320px; 
             padding: 20px; 
             margin: 10px; 
             font-size: 18px; 
@@ -63,25 +46,14 @@
             text-decoration: none; 
             text-align: center; 
             display: block; 
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: transform 0.2;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
-        .btn:active { 
-            transform: scale(0.96); 
-            box-shadow: 0 2px 3px rgba(0,0,0,0.2);
-        }
-        
+        .btn:active { transform: scale(0.96); }
         .btn-view { background: #2ecc71; color: white; }
         .btn-use { background: #e67e22; color: white; }
         .btn-tag { background: #3498db; color: white; } 
-
-        .footer { 
-            color: #576574; 
-            margin-top: 30px; 
-            font-size: 12px; 
-            letter-spacing: 1px; 
-            text-align: center;
-        }
+        .footer { color: #576574; margin-top: 30px; font-size: 12px; text-align: center; }
     </style>
 </head>
 <body>
@@ -100,19 +72,13 @@
 
     <script>
         function checkPassword() {
-            // പാസ്‌വേഡ് ചോദിക്കുന്നു
-            let pass = prompt("ദയവായി പാസ്‌വേഡ് നൽകുക:");
-
+            let pass = prompt("Enter Password:");
             if (pass === "1453") {
-                // പാസ്‌വേഡ് ശരിയായാൽ പോകേണ്ട പേജിന്റെ ലിങ്ക് താഴെ നൽകുക
-                // ഉദാഹരണത്തിന്: "admin.html"
                 window.location.href = "Gist_data_entry.html"; 
             } else if (pass !== null && pass !== "") {
-                // പാസ്‌വേഡ് തെറ്റായാൽ
-                alert("തെറ്റായ പാസ്‌വേഡ്! വീണ്ടും ശ്രമിക്കുക.");
+                alert("Incorrect Password!");
             }
         }
     </script>
-
 </body>
 </html>
