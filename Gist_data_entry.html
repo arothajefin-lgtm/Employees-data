@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jefin's Bulk Gist Editor</title>
+    <style>
+        :root { --primary: #007bff; --success: #28a745; --danger: #dc3545; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); padding: 15px; margin: 0; }
+        .container { max-width: 700px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        input, button, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; }
+        .btn-load { background: var(--primary); color: white; border: none; font-weight: bold; cursor: pointer; }
+        .btn-save { background: var(--success); color: white; border: none; font-weight: bold; position: sticky; bottom: 10px; cursor: pointer; z-index: 100; }
+        .btn-bulk { background: #6f42c1; color: white; border: none; font-weight: bold; cursor: pointer; }
+        .data-item { display: flex; align-items: center; background: #f9f9f9; padding: 10px; margin: 5px 0; border-radius: 8px; border-left: 4px solid var(--primary); }
+        .data-item span { font-weight: bold; color: #555; width: 25%; font-size: 14px; }
+        .data-item input { width: 60%; margin: 0; padding: 8px; }
+        .del-btn { width: 12%; background: var(--danger); color: white; border: none; margin-left: 5px; cursor: pointer; padding: 8px; }
+        .status { text-align: center; font-weight: bold; margin: 10px 0; }
+        .add-panel { background: #eef2f7; padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px dashed #aaa; }
+        .tab-btn { width: 48%; display: inline-block; background: #ddd; border: none; padding: 10px; border-radius: 8px; cursor: pointer; }
+        .active-tab { background: var(--primary); color: white; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h3 style="text-align:center; margin-top:0;">Gist Bulk Manager</h3>
+    
+    <input type="password" id="token" placeholder="GitHub Token നൽകുക">
+    <button class="btn-load" onclick="fetchGist()">Load Data</button>
+
+    <div id="mainEditor" style="display:none;">
+        <div class="add-panel">
+            <h4 style="margin:0 0 10px 0;">Bulk Add (Range)</h4>
+            <p style="font-size:12px; color:#666;">Eg: A1-A10 (Name) & 1000-1010 (Value)</p>
+            <input type="text" id="bulkName" placeholder="Name Range (e.g. A1-A10)">
+            <input type="text" id="bulkVal" placeholder="Value Range (e.g. 1000-1010)">
+            <button class="btn-bulk" onclick="bulkAdd()">Bulk Add Items</button>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+            <button id="tabL" class="tab-btn active-tab" onclick="switchTab('l')">List (l)</button>
+            <button id="tabW" class="tab-btn" onclick="switchTab('w')">Weights (w)</button>
+        </div>
+
+        <input type="text" id="search" placeholder="Search..." oninput="renderData()">
+        <div id="itemsContainer" style="max-height: 400px; overflow-y: auto; border: 1px solid #eee; padding: 5px;"></div>
+        
+        <div id="status" class="status"></div>
+        <button class="btn-save" onclick="updateGist()">Save Changes to Gist</button>
+    </div>
+</div>
+
+<script>
+    let fullData = null;
+    let currentTab = 'l';
+    const gistId = "49987c77b5f42d688ba07c9e82e846f9";
+    const fileName = "data.json";
+
+    async function fetchGist() {
+        const token = document.getElementById('token').value;
+        try {
+            const res = await fetch(`https://api.github.com/gists/${gistId}`, { headers: { 'Authorization': `token ${token}` } });
+            const gist = await res.json();
+            fullData = JSON.parse(gist.files[fileName].content);
+            document.getElementById('mainEditor').style.display = 'block';
+            renderData();
+        } catch (e) { alert("Load Failed!"); }
+    }
+
+    function bulkAdd() {
+        const nameRange = document.getElementById('bulkName').value.split('-');
+        const valRange = document.getElementById('bulkVal').value.split('-');
+
+        if(nameRange.length !== 2 || valRange.length !== 2) return alert("Range ശരിയായി നൽകുക (Eg: A1-A10)");
+
+        const prefix = nameRange[0].match(/[a-zA-Z]+/)[0];
+        const startNum = parseInt(nameRange[0].match(/\d+/)[0]);
+        const endNum = parseInt(nameRange[1].match(/\d+/)[0]);
+        const startVal = parseInt(valRange[0]);
+        const endVal = parseInt(valRange[1]);
+
+        const steps = endNum - startNum;
+        const valStep = (endVal - startVal) / steps;
+
+        for(let i = 0; i <= steps; i++) {
+            const newName = prefix + (startNum + i);
+            const newVal = Math.round(startVal + (i * valStep)).toString();
+            
+            if (currentTab === 'l') {
+                fullData.l.push({ "n": newName, "v": newVal });
+            } else {
+                fullData.w[newName] = newVal;
+            }
+        }
+        renderData();
+        alert("Bulk Items ചേർത്തു!");
+    }
+
+    function deleteItem(index, key) {
+        if(!confirm("ഇത് ഡിലീറ്റ് ചെയ്യണോ?")) return;
+        if (currentTab === 'l') {
+            fullData.l.splice(index, 1);
+        } else {
+            delete fullData.w[key];
+        }
+        renderData();
+    }
+
+    function renderData() {
+        const container = document.getElementById('itemsContainer');
+        const search = document.getElementById('search').value.toUpperCase();
+        container.innerHTML = '';
+
+        if (currentTab === 'l') {
+            fullData.l.forEach((item, index) => {
+                if (item.n.toUpperCase().includes(search)) {
+                    const div = document.createElement('div');
+                    div.className = 'data-item';
+                    div.innerHTML = `<span>${item.n}</span><input type="text" value="${item.v}" oninput="fullData.l[${index}].v=this.value">
+                                     <button class="del-btn" onclick="deleteItem(${index})">X</button>`;
+                    container.appendChild(div);
+                }
+            });
+        } else {
+            for (let key in fullData.w) {
+                if (key.toUpperCase().includes(search)) {
+                    const div = document.createElement('div');
+                    div.className = 'data-item';
+                    div.innerHTML = `<span>${key}</span><input type="text" value="${fullData.w[key]}" oninput="fullData.w['${key}']=this.value">
+                                     <button class="del-btn" onclick="deleteItem(null, '${key}')">X</button>`;
+                    container.appendChild(div);
+                }
+            }
+        }
+    }
+
+    function switchTab(tab) {
+        currentTab = tab;
+        document.getElementById('tabL').classList.toggle('active-tab', tab === 'l');
+        document.getElementById('tabW').classList.toggle('active-tab', tab === 'w');
+        renderData();
+    }
+
+    async function updateGist() {
+        const token = document.getElementById('token').value;
+        const status = document.getElementById('status');
+        status.innerText = "Saving...";
+        const res = await fetch(`https://api.github.com/gists/${gistId}`, {
+            method: 'PATCH',
+            headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ files: { [fileName]: { content: JSON.stringify(fullData, null, 2) } } })
+        });
+        status.innerText = res.ok ? "Saved! ✅" : "Error! ❌";
+    }
+</script>
+</body>
+</html>
