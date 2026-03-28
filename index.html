@@ -7,9 +7,8 @@
     <title>Employee Portal</title>
     <style>
         body { 
-            /* ബാക്ക്ഗ്രൗണ്ട് വെള്ള നിറമാക്കി */
             background: #ffffff; 
-            font-family: sans-serif; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             display: flex; 
             flex-direction: column; 
             align-items: center; 
@@ -24,7 +23,7 @@
             justify-content: center;
             width: 100%;
             max-width: 400px;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
         .header-logo {
             width: 100%;
@@ -32,50 +31,56 @@
             cursor: pointer;
             transition: transform 0.2s;
         }
-        .header-logo:hover { transform: scale(1.03); }
+        .header-logo:hover { transform: scale(1.02); }
 
-        /* ഹെഡിംഗ് പർപ്പിൾ നിറമാക്കി */
+        /* നേരത്തെ ലോഗോയ്ക്ക് ഉപയോഗിച്ച അതേ ഡാർക്ക് പർപ്പിൾ */
         h1 { 
-            color: #6a0dad; 
-            margin: 0 0 30px 0; 
-            font-size: 28px; 
+            color: #5d2d91; 
+            margin: 0 0 35px 0; 
+            font-size: 30px; 
             text-align: center; 
-            font-weight: bold;
+            font-weight: 800;
+            letter-spacing: 1px;
         }
 
-        /* ബട്ടണുകൾ പർപ്പിൾ നിറമാക്കി */
         .btn { 
             width: 100%; 
-            max-width: 320px; 
-            padding: 20px; 
-            margin: 10px; 
-            font-size: 18px; 
-            font-weight: bold; 
+            max-width: 340px; 
+            padding: 22px; 
+            margin: 12px; 
+            font-size: 17px; 
+            font-weight: 700; 
             border: none; 
-            border-radius: 15px; 
+            border-radius: 18px; 
             cursor: pointer; 
             text-decoration: none; 
             text-align: center; 
             display: block; 
-            transition: transform 0.2s, background-color 0.2s;
-            box-shadow: 0 4px 10px rgba(106, 13, 173, 0.2); /* പർപ്പിൾ ഷാഡോ */
-            background: #6a0dad; /* പർപ്പിൾ ബാക്ക്ഗ്രൗണ്ട് */
-            color: white; /* വെള്ള അക്ഷരങ്ങൾ */
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 15px -3px rgba(93, 45, 145, 0.2);
+            /* ബട്ടണിലും അതേ ഡാർക്ക് പർപ്പിൾ */
+            background: #5d2d91; 
+            color: white; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
         
         .btn:hover {
-            background: #520987; /* ഹോവർ ചെയ്യുമ്പോൾ അല്പം കടും നിറം */
+            background: #4a2475; /* ഹോവർ ചെയ്യുമ്പോൾ അല്പം കൂടി ഡാർക്ക് */
+            transform: translateY(-3px);
+            box-shadow: 0 15px 20px -5px rgba(93, 45, 145, 0.3);
         }
 
         .btn:active { 
-            transform: scale(0.96); 
+            transform: scale(0.97); 
         }
 
         .footer { 
-            color: #a2a2a2; 
-            margin-top: 30px; 
-            font-size: 12px; 
+            color: #94a3b8; 
+            margin-top: 40px; 
+            font-size: 13px; 
             text-align: center; 
+            font-weight: 500;
         }
     </style>
 </head>
@@ -87,9 +92,9 @@
 
     <h1>Employee Portal</h1>
 
-    <a href="wax_search.html" class="btn">VIEW WAX WEIGHT</a>
-    <a href="wa_data.html" class="btn">WORK AWAY USAGE</a>
-    <a href="location.html" class="btn">TAG QR & LOCATION</a>
+    <a href="wax_search.html" class="btn">View Wax Weight</a>
+    <a href="wa_data.html" class="btn">Work Away Usage</a>
+    <a href="location.html" class="btn">Tag QR & Location</a>
 
     <div class="footer">Developed by Jefin</div>
 
