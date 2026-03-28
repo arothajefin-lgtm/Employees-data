@@ -7,7 +7,8 @@
     <title>Employee Portal</title>
     <style>
         body { 
-            background: #1e272e; 
+            /* ബാക്ക്ഗ്രൗണ്ട് വെള്ള നിറമാക്കി */
+            background: #ffffff; 
             font-family: sans-serif; 
             display: flex; 
             flex-direction: column; 
@@ -32,7 +33,17 @@
             transition: transform 0.2s;
         }
         .header-logo:hover { transform: scale(1.03); }
-        h1 { color: white; margin: 0 0 30px 0; font-size: 28px; text-align: center; }
+
+        /* ഹെഡിംഗ് പർപ്പിൾ നിറമാക്കി */
+        h1 { 
+            color: #6a0dad; 
+            margin: 0 0 30px 0; 
+            font-size: 28px; 
+            text-align: center; 
+            font-weight: bold;
+        }
+
+        /* ബട്ടണുകൾ പർപ്പിൾ നിറമാക്കി */
         .btn { 
             width: 100%; 
             max-width: 320px; 
@@ -46,14 +57,26 @@
             text-decoration: none; 
             text-align: center; 
             display: block; 
-            transition: transform 0.2;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s, background-color 0.2s;
+            box-shadow: 0 4px 10px rgba(106, 13, 173, 0.2); /* പർപ്പിൾ ഷാഡോ */
+            background: #6a0dad; /* പർപ്പിൾ ബാക്ക്ഗ്രൗണ്ട് */
+            color: white; /* വെള്ള അക്ഷരങ്ങൾ */
         }
-        .btn:active { transform: scale(0.96); }
-        .btn-view { background: #2ecc71; color: white; }
-        .btn-use { background: #e67e22; color: white; }
-        .btn-tag { background: #3498db; color: white; } 
-        .footer { color: #576574; margin-top: 30px; font-size: 12px; text-align: center; }
+        
+        .btn:hover {
+            background: #520987; /* ഹോവർ ചെയ്യുമ്പോൾ അല്പം കടും നിറം */
+        }
+
+        .btn:active { 
+            transform: scale(0.96); 
+        }
+
+        .footer { 
+            color: #a2a2a2; 
+            margin-top: 30px; 
+            font-size: 12px; 
+            text-align: center; 
+        }
     </style>
 </head>
 <body>
@@ -64,9 +87,9 @@
 
     <h1>Employee Portal</h1>
 
-    <a href="wax_search.html" class="btn btn-view">VIEW WAX WEIGHT</a>
-    <a href="wa_data.html" class="btn btn-use">WORK AWAY USAGE</a>
-    <a href="location.html" class="btn btn-tag">TAG QR & LOCATION</a>
+    <a href="wax_search.html" class="btn">VIEW WAX WEIGHT</a>
+    <a href="wa_data.html" class="btn">WORK AWAY USAGE</a>
+    <a href="location.html" class="btn">TAG QR & LOCATION</a>
 
     <div class="footer">Developed by Jefin</div>
 
