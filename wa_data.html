@@ -6,40 +6,143 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #eceff1; padding: 10px; margin: 0; }
-        .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: #333; margin: 5px 0; font-size: 20px; }
-        label { font-weight: bold; display: block; margin-top: 12px; color: #555; font-size: 14px; }
-        input, select { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-        
-        #stockList { max-height: 280px; overflow-y: auto; margin-top: 10px; border: 1px solid #eee; border-radius: 8px; background: #fafafa; }
-        .stock-item { 
-            background: #fff; border: 1px solid #ddd; padding: 12px; margin: 6px; 
-            border-radius: 8px; cursor: pointer; transition: 0.2s;
+        :root {
+            --primary: #5d2d91; /* Purple */
+            --secondary: #ff9800; /* Orange */
+            --bg: #f8fafc; /* Grayish White */
+            --text-dark: #334155;
+            --text-gray: #64748b;
         }
-        .stock-item.selected { border: 2px solid #007bff; background: #e3f2fd; }
+
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background: var(--bg); 
+            padding: 10px; 
+            margin: 0; 
+            display: flex;
+            justify-content: center;
+        }
+
+        .card { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 30px; 
+            box-shadow: 0 10px 30px rgba(93, 45, 145, 0.08); 
+            width: 100%; 
+            max-width: 450px; 
+            border: 1px solid #f1f5f9;
+        }
+
+        h2 { 
+            text-align: center; 
+            background: linear-gradient(135deg, var(--primary) 0%, #3d1d61 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px; 
+            font-size: 22px; 
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        label { 
+            font-weight: 600; 
+            display: block; 
+            margin-top: 12px; 
+            color: var(--text-dark); 
+            font-size: 13px;
+        }
+
+        input, select { 
+            width: 100%; 
+            padding: 12px; 
+            margin-top: 5px; 
+            border: 2px solid #f1f5f9; 
+            border-radius: 14px; 
+            box-sizing: border-box; 
+            font-size: 15px; 
+            outline: none;
+            background: #fdfdfd;
+        }
+
+        input:focus, select:focus {
+            border-color: #ddd6fe;
+        }
         
-        .compound-header { font-weight: bold; font-size: 15px; color: #000; display: block; margin-bottom: 4px; }
+        #stockList { 
+            max-height: 280px; 
+            overflow-y: auto; 
+            margin-top: 10px; 
+            border-radius: 18px; 
+            background: #f8fafc;
+            padding: 5px;
+            border: 1px solid #edf2f7;
+        }
+
+        .stock-item { 
+            background: white; 
+            border: 1px solid #e2e8f0; 
+            padding: 14px; 
+            margin-bottom: 8px; 
+            border-radius: 16px; 
+            cursor: pointer; 
+            transition: 0.2s;
+        }
+
+        .stock-item.selected { 
+            border: 2.5px solid var(--primary); 
+            background: #f5f0ff; 
+        }
         
-        /* വിവരങ്ങൾ ഒരേ വരിയിൽ വരാനുള്ള സ്റ്റൈൽ */
+        .compound-header { 
+            font-weight: 700; 
+            font-size: 15px; 
+            color: var(--primary); 
+            display: block; 
+        }
+        
         .batch-info-row { 
             display: flex; 
             justify-content: space-between; 
-            font-size: 12px; 
-            color: #444; 
+            font-size: 11px; 
+            color: var(--text-gray); 
             margin-top: 8px;
             padding-top: 6px;
-            border-top: 1px dotted #ccc;
+            border-top: 1px solid #f1f5f9;
         }
 
-        .bal-badge { float: right; background: #ffebee; color: #d32f2f; padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 13px; }
+        .bal-badge { 
+            float: right; 
+            background: #fff3e0; 
+            color: #e65100; 
+            padding: 3px 10px; 
+            border-radius: 10px; 
+            font-weight: 700; 
+            font-size: 11px; 
+            border: 1px solid #ffcc80;
+        }
 
         button { 
-            width: 100%; padding: 15px; background: #28a745; color: white; border: none; 
-            border-radius: 8px; font-weight: bold; font-size: 18px; margin-top: 20px; cursor: pointer;
+            width: 100%; 
+            padding: 16px; 
+            background: linear-gradient(135deg, var(--primary) 0%, #3d1d61 100%); 
+            color: white; 
+            border: none; 
+            border-radius: 18px; 
+            font-weight: 700; 
+            font-size: 17px; 
+            margin-top: 20px; 
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(93, 45, 145, 0.2);
         }
-        button:active { background: #218838; opacity: 0.9; }
+
+        button:active { transform: scale(0.97); }
+
+        /* Scrollbar */
+        #stockList::-webkit-scrollbar { width: 4px; }
+        #stockList::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -62,12 +165,12 @@
 
     <label>Select Compound (Active Stock)</label>
     <div id="stockList">
-        <p style="text-align:center; padding:10px; color:#999;">Loading stock...</p>
+        <p style="text-align:center; padding:15px; color:#94a3b8;">Loading stock...</p>
     </div>
     <input type="hidden" id="selectedKey">
 
     <label>Quantity to Use (Batch)</label>
-    <input type="number" id="qtyToUse" step="0.5" placeholder="Enter Quantity in Batch">
+    <input type="number" id="qtyToUse" step="0.5" placeholder="0.0">
 
     <button onclick="updateUsage()">UPDATE USAGE</button>
 </div>
@@ -93,7 +196,7 @@
         listDiv.innerHTML = "";
 
         if(!data) {
-            listDiv.innerHTML = "<p style='text-align:center; padding:10px;'>No active stock.</p>";
+            listDiv.innerHTML = "<p style='text-align:center; padding:15px;'>No active stock.</p>";
             return;
         }
 
@@ -109,16 +212,16 @@
                 for(let i=0; i<items.length; i++) items[i].classList.remove('selected');
                 div.classList.add('selected');
                 document.getElementById('selectedKey').value = key;
+                if(navigator.vibrate) navigator.vibrate(30);
             };
             
-            // Skid No: എന്ന് ലേബൽ നൽകി ക്രമീകരിച്ചു
             div.innerHTML = `
                 <span class="bal-badge">${item.balance} Batch Left</span>
                 <span class="compound-header">${item.code} | W/A ${item.wa}</span>
-                <div style="font-size: 11px; color: #777;">IPO: ${item.ipo || 'N/A'} (For: ${item.mixingFor || 'N/A'})</div>
+                <div style="font-size: 11px; color: #64748b; margin-top: 3px;">IPO: ${item.ipo || 'N/A'}</div>
                 <div class="batch-info-row">
                     <span><b>Dt/Sh:</b> ${item.displayTag}</span>
-                    <span><b>Skid No:</b> ${item.skidNo}</span>
+                    <span><b>Skid:</b> ${item.skidNo}</span>
                     <span><b>Loc:</b> ${item.location || 'N/A'}</span>
                 </div>
             `;
@@ -150,20 +253,14 @@
             const d = new Date(customDate);
             const formattedDate = d.getDate().toString().padStart(2, '0') + "/" + (d.getMonth() + 1).toString().padStart(2, '0') + "/" + d.getFullYear();
 
-            db.ref('compounds/' + key).update({
-                balance: parseFloat(newBalance)
-            });
+            db.ref('compounds/' + key).update({ balance: parseFloat(newBalance) });
 
             db.ref('compounds/' + key + '/usageHistory').push({
-                empID: empID,
-                usedQty: usedQty,
-                date: formattedDate,
-                time: timeStr,
-                shift: shift,
-                timestamp: Date.now()
+                empID: empID, usedQty: usedQty, date: formattedDate, time: timeStr, shift: shift, timestamp: Date.now()
             }).then(() => {
-                alert(usedQty + " Batch വിജയകരമായി അപ്‌ഡേറ്റ് ചെയ്തു!");
+                alert(usedQty + " Batch അപ്‌ഡേറ്റ് ചെയ്തു!");
                 document.getElementById('qtyToUse').value = "";
+                document.getElementById('selectedKey').value = "";
             });
         });
     }
