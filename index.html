@@ -154,5 +154,32 @@
             });
         });
     </script>
+    <script>
+    // 1. ആപ്പ് ലോഡ് ചെയ്യുമ്പോൾ ഹിസ്റ്ററി ലോക്ക് ചെയ്യുന്നു
+    (function() {
+        var currentState = { page: "home" };
+        history.pushState(currentState, "");
+
+        window.onpopstate = function(event) {
+            // ഫോണിലെ ബാക്ക് ബട്ടൺ അമർത്തുമ്പോൾ ഇത് പ്രവർത്തിക്കും
+            if (confirm("നിങ്ങൾക്ക് ആപ്പിൽ നിന്ന് പുറത്ത് പോകണോ?")) {
+                // യൂസർ ശരി എന്ന് പറഞ്ഞാൽ മാത്രം ആപ്പ് ക്ലോസ് ചെയ്യുക
+                navigator.app ? navigator.app.exitApp() : window.close();
+            } else {
+                // അല്ലെങ്കിൽ ആപ്പിൽ തന്നെ നിർത്തുക, ഹിസ്റ്ററി വീണ്ടും ലോക്ക് ചെയ്യുക
+                history.pushState(currentState, "");
+            }
+        };
+    })();
+
+    function checkPassword() {
+        let pass = prompt("Enter Password:");
+        if (pass === "1453") {
+            window.location.href = "Gist_data_entry.html"; 
+        } else if (pass !== null && pass !== "") {
+            alert("Incorrect Password!");
+        }
+    }
+    </script>
 </body>
 </html>
