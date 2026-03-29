@@ -265,5 +265,21 @@
         });
     }
 </script>
+    <script>
+    // 1. ഹിസ്റ്ററിയിൽ ഒരു സ്റ്റേറ്റ് ഉണ്ടാക്കുന്നു
+    history.pushState(null, null, location.href);
+
+    window.onpopstate = function () {
+        // 2. ഫോണിലെ ബാക്ക് ബട്ടൺ അമർത്തുമ്പോൾ ഹോം പേജിലേക്ക് പോകുന്നു
+        window.location.href = "index.html";
+    };
+
+    // ബട്ടണുകൾ അമർത്തുമ്പോൾ വൈബ്രേഷൻ ഫീഡ്‌ബാക്ക് (Optional)
+    if (navigator.vibrate) {
+        document.querySelectorAll('button, .btn, .list-item').forEach(el => {
+            el.addEventListener('click', () => navigator.vibrate(40));
+        });
+    }
+</script>
 </body>
 </html>
