@@ -134,5 +134,24 @@
             }
         }
     </script>
+    <script>
+    // ബാക്ക് ബട്ടൺ അമർത്തുമ്പോൾ ആപ്പ് ക്ലോസ് ആകാതിരിക്കാൻ
+    window.addEventListener('popstate', function (event) {
+        // ഹിസ്റ്ററിയിൽ പിന്നോട്ട് പോകാൻ ഉണ്ടെങ്കിൽ അത് ചെയ്യുക
+        if (window.history.length > 1) {
+            window.history.back();
+        }
+    });
+
+    // ആപ്പിലെ ലിങ്കുകളോ ബട്ടണുകളോ ക്ലിക്ക് ചെയ്യുമ്പോൾ ഹിസ്റ്ററി പുഷ് ചെയ്യാൻ
+    function handleBackNavigation() {
+        history.pushState(null, null, window.location.href);
+    }
+
+    // പേജ് ലോഡ് ആകുമ്പോൾ ഒരു സ്റ്റേറ്റ് ആഡ് ചെയ്യുന്നു
+    window.onload = function() {
+        handleBackNavigation();
+    };
+    </script>
 </body>
 </html>
