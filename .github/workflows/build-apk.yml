@@ -30,7 +30,7 @@ jobs:
           npm init -y
           npm install @capacitor/core @capacitor/cli @capacitor/android @capacitor/assets
           # താഴെയുള്ള വരി ശ്രദ്ധിക്കുക, സ്പേസ് കൃത്യമാണ്
-          npx cap init "My Tool Box" com.arothajefin.toolbox --web-dir www
+          npx cap init "employee log" com.arothajefin.employee log--web-dir www
           npx cap add android
 
       - name: Generate App Icons
