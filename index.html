@@ -7,11 +7,9 @@
     <title>Employee Portal</title>
     <style>
         body { 
-            /* White to Purple Gradient Settings */
             background: linear-gradient(-45deg, #ffffff, #f3e5f5, #5d2d91, #9c27b0);
             background-size: 400% 400%;
             animation: whitePurpleBG 15s ease infinite;
-            
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             display: flex; 
             flex-direction: column; 
@@ -23,14 +21,12 @@
             box-sizing: border-box;
         }
 
-        /* ആനിമേഷൻ കീഫ്രെയിംസ് */
         @keyframes whitePurpleBG {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
         }
 
-        /* ബാക്ക്ഗ്രൗണ്ടിന് മുകളിൽ കണ്ടന്റ് വ്യക്തമാകാൻ ഒരു ചെറിയ ഗ്ലാസ് ഇഫക്റ്റ് */
         .portal-card {
             background: rgba(255, 255, 255, 0.7);
             backdrop-filter: blur(10px);
@@ -133,25 +129,30 @@
                 alert("Incorrect Password!");
             }
         }
-    </script>
-    <script>
-    // ബാക്ക് ബട്ടൺ അമർത്തുമ്പോൾ ആപ്പ് ക്ലോസ് ആകാതിരിക്കാൻ
-    window.addEventListener('popstate', function (event) {
-        // ഹിസ്റ്ററിയിൽ പിന്നോട്ട് പോകാൻ ഉണ്ടെങ്കിൽ അത് ചെയ്യുക
-        if (window.history.length > 1) {
-            window.history.back();
-        }
-    });
 
-    // ആപ്പിലെ ലിങ്കുകളോ ബട്ടണുകളോ ക്ലിക്ക് ചെയ്യുമ്പോൾ ഹിസ്റ്ററി പുഷ് ചെയ്യാൻ
-    function handleBackNavigation() {
-        history.pushState(null, null, window.location.href);
-    }
+        // --- NAVIGATION LOGIC ---
+        
+        // ലോഡ് ആകുമ്പോൾ ഒരു സ്റ്റേറ്റ് പുഷ് ചെയ്യുന്നു
+        history.pushState({page: 1}, "", "");
 
-    // പേജ് ലോഡ് ആകുമ്പോൾ ഒരു സ്റ്റേറ്റ് ആഡ് ചെയ്യുന്നു
-    window.onload = function() {
-        handleBackNavigation();
-    };
+        window.onpopstate = function(event) {
+            // നാവിഗേഷൻ ബാക്ക് ബട്ടൺ അമർത്തുമ്പോൾ
+            if (confirm("നിങ്ങൾക്ക് ആപ്പിൽ നിന്ന് പുറത്ത് പോകണോ? (Close App?)")) {
+                // യൂസർ OK അടിച്ചാൽ ആപ്പിൽ നിന്ന് പുറത്ത് പോകാം
+                // ബ്രൗസറിൽ ആണെങ്കിൽ ഹിസ്റ്ററിയിൽ പിന്നോട്ട് പോകും
+                window.history.back();
+            } else {
+                // കൺഫർമേഷൻ വേണ്ടെന്ന് വെച്ചാൽ ഹിസ്റ്ററി റീസെറ്റ് ചെയ്യുന്നു
+                history.pushState({page: 1}, "", "");
+            }
+        };
+
+        // വൈബ്രേഷൻ ഫീഡ്‌ബാക്ക് (Optional)
+        document.querySelectorAll('.btn').forEach(button => {
+            button.addEventListener('click', () => {
+                if (navigator.vibrate) navigator.vibrate(40);
+            });
+        });
     </script>
 </body>
 </html>
