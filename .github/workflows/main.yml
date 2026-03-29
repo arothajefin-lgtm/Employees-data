@@ -1,0 +1,33 @@
+name: Build Employee Log APK
+on:
+  push:
+    branches:
+      - main  # നിങ്ങൾ കോഡ് പുഷ് ചെയ്യുമ്പോൾ ഇത് റൺ ആകും
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+
+      - name: Build with Bubblewrap
+        run: |
+          npm install -g @bubblewrap/cli
+          # നിങ്ങളുടെ വെബ്സൈറ്റിനെ ആപ്പാക്കി മാറ്റാനുള്ള കമാൻഡുകൾ
+          # ആദ്യ ഘട്ടത്തിൽ ഇത് ലളിതമായി ഒരു സിഗ്നേച്ചർ ഇല്ലാത്ത APK നിർമ്മിക്കും
+          bubblewrap build
+        continue-on-error: true
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: Employee-Log-APK
+          path: ./*.apk
+
