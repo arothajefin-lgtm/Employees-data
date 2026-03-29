@@ -3,217 +3,188 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jefin's Gist Manager</title>
+    <title>Employee Portal - Data Entry & Restore</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+
     <style>
-        :root { --primary: #5d2d91; --secondary: #f58220; --danger: #dc3545; --bg: #f4f7f6; }
-        body { font-family: 'Segoe UI', Roboto, sans-serif; background: var(--bg); padding: 10px; margin: 0; color: #333; }
-        .container { max-width: 700px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-top: 5px solid var(--primary); }
-        
-        input, button, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; outline: none; }
-        input:focus { border-color: var(--primary); }
-
-        .btn-load { background: var(--primary); color: white; border: none; font-weight: bold; cursor: pointer; }
-        .btn-save { background: #28a745; color: white; border: none; font-weight: bold; position: sticky; bottom: 10px; cursor: pointer; z-index: 100; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-        .btn-bulk { background: var(--secondary); color: white; border: none; font-weight: bold; cursor: pointer; }
-        .btn-single { background: var(--primary); color: white; border: none; font-weight: bold; cursor: pointer; }
-        
-        .panel { background: #eef2f7; padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 1px dashed #aaa; }
-        .tab-btn { width: 48%; display: inline-block; background: #ddd; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .active-tab { background: var(--primary); color: white; }
-
-        .data-item { display: flex; align-items: center; background: #fff; padding: 8px; margin: 5px 0; border-radius: 8px; border-left: 4px solid var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .data-item span { font-weight: bold; color: var(--primary); width: 30%; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .data-item input { width: 55%; margin: 0; padding: 8px; border: 1px solid #eee; }
-        .del-btn { width: 12%; background: var(--danger); color: white; border: none; margin-left: 5px; cursor: pointer; padding: 8px; border-radius: 5px; }
-        
-        .sort-row { display: flex; align-items: center; justify-content: space-between; background: #fff; padding: 5px 10px; border-radius: 8px; margin-bottom: 10px; }
+        :root { --primary: #5d2d91; --success: #28a745; --danger: #dc3545; --info: #17a2b8; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); padding: 15px; margin: 0; }
+        .container { max-width: 700px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        input, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; }
+        .btn-add { background: var(--primary); color: white; border: none; font-weight: bold; cursor: pointer; }
+        .btn-bulk { background: #6f42c1; color: white; border: none; font-weight: bold; cursor: pointer; }
+        .btn-save { background: var(--success); color: white; border: none; font-weight: bold; position: sticky; bottom: 10px; cursor: pointer; z-index: 100; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .btn-backup { background: var(--info); color: white; border: none; font-weight: bold; cursor: pointer; width: 48%; }
+        .btn-restore { background: #ffc107; color: #333; border: none; font-weight: bold; cursor: pointer; width: 48%; }
+        .btn-multi-del { background: var(--danger); color: white; border: none; font-weight: bold; cursor: pointer; display: none; margin-bottom: 10px; }
+        .panel { background: #eef2f7; padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px dashed #aaa; }
+        .data-item { display: flex; align-items: center; background: #f9f9f9; padding: 10px; margin: 5px 0; border-radius: 8px; border-left: 4px solid var(--primary); }
+        .data-item input[type="checkbox"] { width: 30px; margin-right: 10px; }
+        .data-item span { font-weight: bold; color: #555; width: 30%; font-size: 14px; }
+        .data-item input[type="text"] { width: 60%; margin: 0; padding: 8px; }
         .status { text-align: center; font-weight: bold; margin: 10px 0; color: var(--primary); }
-        
-        .logo-container { text-align: center; margin-bottom: 15px; }
-        .logo-container img { height: 35px; }
+        h4 { margin: 0 0 10px 0; color: var(--primary); border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+        .action-bar { display: flex; gap: 10px; margin-bottom: 10px; justify-content: space-between; }
+        #fileInput { display: none; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="logo-container"><img src="atl.png" alt="Apollo"></div>
-    <h3 style="text-align:center; margin-top:0; color: var(--primary);">Gist Bulk Manager</h3>
-    
-    <input type="password" id="token" placeholder="GitHub Personal Access Token നൽകുക">
-    <button class="btn-load" onclick="fetchGist()">LOAD DATA</button>
+    <h3 style="text-align:center; margin-top:0; color: var(--primary);">Data Entry Portal</h3>
+    <div id="status" class="status">Connecting to Firebase...</div>
 
     <div id="mainEditor" style="display:none;">
-        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-            <button id="tabL" class="tab-btn active-tab" onclick="switchTab('l')">List (l)</button>
-            <button id="tabW" class="tab-btn" onclick="switchTab('w')">Weights (w)</button>
-        </div>
-
         <div class="panel">
-            <h4 style="margin:0 0 10px 0;">Single Entry</h4>
-            <div style="display:flex; gap:5px;">
-                <input type="text" id="singleName" placeholder="Name/Code">
-                <input type="text" id="singleVal" placeholder="Value">
+            <h4>Single Add</h4>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="singleName" placeholder="Name (Eg: A1)">
+                <input type="text" id="singleVal" placeholder="Value (Eg: 1000)">
             </div>
-            <button class="btn-single" onclick="addSingle()">Add Item</button>
+            <button class="btn-add" onclick="addSingle()">Add Item</button>
         </div>
 
         <div class="panel">
-            <h4 style="margin:0 0 10px 0;">Bulk Entry (Range)</h4>
-            <input type="text" id="bulkName" placeholder="Name Range (e.g. A1-A10)">
-            <input type="text" id="bulkVal" placeholder="Value Range (e.g. 1000-1010)">
-            <button class="btn-bulk" onclick="bulkAdd()">Bulk Add Items</button>
+            <h4>Bulk Add (Range)</h4>
+            <input type="text" id="bulkName" placeholder="Name Range (Eg: A1-A10)">
+            <input type="text" id="bulkVal" placeholder="Value Range (Eg: 1000-1010)">
+            <button class="btn-bulk" onclick="bulkAdd()">Add Bulk Range</button>
         </div>
 
-        <div class="sort-row">
-            <input type="text" id="search" placeholder="Search..." oninput="renderData()" style="width: 65%; margin:0;">
-            <button onclick="toggleSort()" id="sortBtn" style="width: 30%; margin:0; padding: 8px; font-size: 12px; background: #f8f9fa;">Sort A-Z ↕️</button>
+        <div class="action-bar">
+            <button class="btn-backup" onclick="downloadBackup()">Download Backup</button>
+            <button class="btn-restore" onclick="triggerRestore()">Restore Backup</button>
+            <input type="file" id="fileInput" accept=".json" onchange="restoreData(event)">
         </div>
 
-        <div id="itemsContainer" style="max-height: 400px; overflow-y: auto; border: 1px solid #eee; padding: 5px; border-radius: 8px; background: #fafafa;"></div>
-        
-        <div id="status" class="status"></div>
-        <button class="btn-save" onclick="updateGist()">SAVE CHANGES TO GIST</button>
+        <hr>
+        <input type="text" id="search" placeholder="Search data..." oninput="renderData()">
+        <button id="multiDelBtn" class="btn-multi-del" onclick="deleteSelected()">Delete Selected Items</button>
+        <div id="itemsContainer" style="max-height: 400px; overflow-y: auto; border: 1px solid #eee; padding: 5px; border-radius: 8px; background: #fff;"></div>
+        <button class="btn-save" onclick="updateFirebase()">Save All Changes to Firebase</button>
     </div>
 </div>
 
 <script>
-    let fullData = null;
-    let currentTab = 'l';
-    let isAscending = true;
-    const gistId = "49987c77b5f42d688ba07c9e82e846f9";
-    const fileName = "data.json";
-
-    // Natural Sort Function (A2 < A10)
-    const naturalSort = (a, b) => {
-        return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+    const firebaseConfig = {
+      apiKey: "AIzaSyB4akOCR4LTOK6HyvnxwMc7SKpbrMzjNC0",
+      authDomain: "compound-workaway.firebaseapp.com",
+      databaseURL: "https://compound-workaway-default-rtdb.firebaseio.com",
+      projectId: "compound-workaway",
+      storageBucket: "compound-workaway.firebasestorage.app",
+      messagingSenderId: "1020479561110",
+      appId: "1:1020479561110:web:f1cb9448e2bcf9184811b7"
     };
 
-    async function fetchGist() {
-        const token = document.getElementById('token').value;
-        if(!token) return alert("Token നൽകുക!");
-        try {
-            const res = await fetch(`https://api.github.com/gists/${gistId}`, { headers: { 'Authorization': `token ${token}` } });
-            const gist = await res.json();
-            fullData = JSON.parse(gist.files[fileName].content);
-            document.getElementById('mainEditor').style.display = 'block';
-            renderData();
-        } catch (e) { alert("Load Failed!"); }
-    }
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    let dataList = [];
+
+    database.ref('portalData').on('value', (snapshot) => {
+        const val = snapshot.val();
+        dataList = Array.isArray(val) ? val : [];
+        document.getElementById('mainEditor').style.display = 'block';
+        document.getElementById('status').innerText = "Sync Active ✅";
+        renderData();
+    });
 
     function addSingle() {
-        const name = document.getElementById('singleName').value.trim().toUpperCase();
+        const name = document.getElementById('singleName').value.trim();
         const val = document.getElementById('singleVal').value.trim();
-        if(!name || !val) return alert("രണ്ട് കോളങ്ങളും പൂരിപ്പിക്കുക");
-
-        if (currentTab === 'l') {
-            fullData.l.push({ "n": name, "v": val });
-        } else {
-            fullData.w[name] = val;
-        }
+        if(!name || !val) return alert("Fill all fields!");
+        dataList.push({ "n": name, "v": val });
         renderData();
-        document.getElementById('singleName').value = '';
-        document.getElementById('singleVal').value = '';
     }
 
     function bulkAdd() {
-        const nameRange = document.getElementById('bulkName').value.split('-');
-        const valRange = document.getElementById('bulkVal').value.split('-');
-        if(nameRange.length !== 2 || valRange.length !== 2) return alert("Range ശരിയായി നൽകുക");
-
-        const prefixMatch = nameRange[0].match(/[a-zA-Z]+/);
-        const prefix = prefixMatch ? prefixMatch[0] : "";
-        const startNum = parseInt(nameRange[0].match(/\d+/)[0]);
-        const endNum = parseInt(nameRange[1].match(/\d+/)[0]);
-        const startVal = parseFloat(valRange[0]);
-        const endVal = parseFloat(valRange[1]);
-
-        const steps = endNum - startNum;
-        const valStep = steps === 0 ? 0 : (endVal - startVal) / steps;
-
-        for(let i = 0; i <= steps; i++) {
-            const newName = prefix + (startNum + i);
-            const newVal = (startVal + (i * valStep)).toFixed(2).replace(/\.00$/, "");
-            
-            if (currentTab === 'l') {
-                fullData.l.push({ "n": newName, "v": newVal });
-            } else {
-                fullData.w[newName] = newVal;
+        const nameInput = document.getElementById('bulkName').value;
+        const valInput = document.getElementById('bulkVal').value;
+        const nameRange = nameInput.split('-');
+        const valRange = valInput.split('-');
+        if(nameRange.length !== 2 || valRange.length !== 2) return alert("Range Error!");
+        try {
+            const prefix = nameRange[0].match(/[a-zA-Z]+/)[0];
+            const startNum = parseInt(nameRange[0].match(/\d+/)[0]);
+            const endNum = parseInt(nameRange[1].match(/\d+/)[0]);
+            const startVal = parseFloat(valRange[0]);
+            const endVal = parseFloat(valRange[1]);
+            const steps = endNum - startNum;
+            const valStep = steps === 0 ? 0 : (endVal - startVal) / steps;
+            for(let i = 0; i <= steps; i++) {
+                dataList.push({ "n": prefix + (startNum + i), "v": (startVal + (i * valStep)).toFixed(0) });
             }
-        }
-        renderData();
+            renderData();
+        } catch(e) { alert("Format Error!"); }
     }
 
-    function deleteItem(index, key) {
-        if(!confirm("ഇത് ഡിലീറ്റ് ചെയ്യണോ?")) return;
-        if (currentTab === 'l') {
-            fullData.l.splice(index, 1);
-        } else {
-            delete fullData.w[key];
-        }
-        renderData();
+    function triggerRestore() { document.getElementById('fileInput').click(); }
+
+    function restoreData(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                let imported = JSON.parse(e.target.result);
+                // പഴയ ഫോർമാറ്റ് ആണെങ്കിൽ (object with 'l' and 'w'), 'l' മാത്രം എടുക്കുന്നു
+                if (!Array.isArray(imported) && imported.l && Array.isArray(imported.l)) {
+                    imported = imported.l;
+                }
+                if (Array.isArray(imported)) {
+                    if(confirm(imported.length + " ഐറ്റങ്ങൾ ലോഡ് ചെയ്യണോ?")) {
+                        dataList = imported;
+                        renderData();
+                    }
+                } else { alert("സപ്പോർട്ട് ചെയ്യാത്ത ഫയൽ!"); }
+            } catch (err) { alert("Error reading file!"); }
+        };
+        reader.readAsText(file);
     }
 
-    function toggleSort() {
-        isAscending = !isAscending;
-        document.getElementById('sortBtn').innerText = isAscending ? "Sort A-Z ↕️" : "Sort Z-A ↕️";
-        renderData();
+    function downloadBackup() {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dataList, null, 2));
+        const dlAnchor = document.createElement('a');
+        dlAnchor.setAttribute("href", dataStr);
+        dlAnchor.setAttribute("download", "backup.json");
+        dlAnchor.click();
     }
 
     function renderData() {
         const container = document.getElementById('itemsContainer');
         const search = document.getElementById('search').value.toUpperCase();
         container.innerHTML = '';
-
-        if (currentTab === 'l') {
-            let list = [...fullData.l];
-            list.sort((a, b) => isAscending ? naturalSort(a.n, b.n) : naturalSort(b.n, a.n));
-            
-            list.forEach((item) => {
-                if (item.n.toUpperCase().includes(search)) {
-                    const originalIdx = fullData.l.findIndex(x => x === item);
-                    const div = document.createElement('div');
-                    div.className = 'data-item';
-                    div.innerHTML = `<span>${item.n}</span><input type="text" value="${item.v}" oninput="fullData.l[${originalIdx}].v=this.value">
-                                     <button class="del-btn" onclick="deleteItem(${originalIdx})">×</button>`;
-                    container.appendChild(div);
-                }
-            });
-        } else {
-            let keys = Object.keys(fullData.w);
-            keys.sort((a, b) => isAscending ? naturalSort(a, b) : naturalSort(b, a));
-
-            keys.forEach(key => {
-                if (key.toUpperCase().includes(search)) {
-                    const div = document.createElement('div');
-                    div.className = 'data-item';
-                    div.innerHTML = `<span>${key}</span><input type="text" value="${fullData.w[key]}" oninput="fullData.w['${key}']=this.value">
-                                     <button class="del-btn" onclick="deleteItem(null, '${key}')">×</button>`;
-                    container.appendChild(div);
-                }
-            });
-        }
+        dataList.forEach((item, index) => {
+            if (item.n.toUpperCase().includes(search)) {
+                const div = document.createElement('div');
+                div.className = 'data-item';
+                div.innerHTML = `<input type="checkbox" class="del-check" data-id="${index}">
+                                 <span>${item.n}</span>
+                                 <input type="text" value="${item.v}" oninput="dataList[${index}].v=this.value">`;
+                container.appendChild(div);
+            }
+        });
     }
 
-    function switchTab(tab) {
-        currentTab = tab;
-        document.getElementById('tabL').classList.toggle('active-tab', tab === 'l');
-        document.getElementById('tabW').classList.toggle('active-tab', tab === 'w');
+    function deleteSelected() {
+        if(!confirm("Delete?")) return;
+        const checked = document.querySelectorAll('.del-check:checked');
+        const indices = Array.from(checked).map(c => parseInt(c.dataset.id)).sort((a,b) => b-a);
+        indices.forEach(i => dataList.splice(i, 1));
         renderData();
     }
 
-    async function updateGist() {
-        const token = document.getElementById('token').value;
-        const status = document.getElementById('status');
-        status.innerText = "Saving...";
-        try {
-            const res = await fetch(`https://api.github.com/gists/${gistId}`, {
-                method: 'PATCH',
-                headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ files: { [fileName]: { content: JSON.stringify(fullData, null, 2) } } })
-            });
-            status.innerText = res.ok ? "Saved! ✅" : "Error! ❌";
-        } catch (e) { status.innerText = "Error! ❌"; }
+    function updateFirebase() {
+        database.ref('portalData').set(dataList).then(() => alert("Saved!"));
     }
+
+    document.addEventListener('change', (e) => {
+        if(e.target.classList.contains('del-check')) {
+            const anyChecked = document.querySelectorAll('.del-check:checked').length > 0;
+            document.getElementById('multiDelBtn').style.display = anyChecked ? 'block' : 'none';
+        }
+    });
 </script>
 </body>
 </html>
