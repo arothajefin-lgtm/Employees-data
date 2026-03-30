@@ -19,6 +19,7 @@
             margin: 0; 
             padding: 20px;
             box-sizing: border-box;
+            overflow: hidden;
         }
 
         @keyframes whitePurpleBG {
@@ -39,32 +40,16 @@
             width: 100%;
             max-width: 420px;
             border: 1px solid rgba(255, 255, 255, 0.4);
+            position: relative;
         }
 
-        #login-section { text-align: center; width: 100%; }
-        #main-content { display: none; width: 100%; }
+        #login-section, #main-content { width: 100%; text-align: center; }
+        #main-content { display: none; }
 
-        .logo-container {
-            display: flex;
-            justify-content: center;
-            width: 100%;
-            margin-bottom: 15px;
-        }
+        .logo-container { width: 100%; margin-bottom: 15px; }
+        .header-logo { width: 80%; height: auto; cursor: pointer; }
 
-        .header-logo {
-            width: 80%;
-            height: auto;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-
-        h1 { 
-            color: #5d2d91; 
-            margin: 0 0 25px 0; 
-            font-size: 28px; 
-            text-align: center; 
-            font-weight: 800;
-        }
+        h1 { color: #5d2d91; margin: 0 0 20px 0; font-size: 28px; font-weight: 800; }
 
         input[type="number"] {
             width: 100%;
@@ -75,70 +60,69 @@
             font-size: 18px;
             text-align: center;
             box-sizing: border-box;
-            -moz-appearance: textfield;
-        }
-        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
         }
 
+        /* പവർഫുൾ ആയ പഴയ ബട്ടൺ സ്റ്റൈൽ */
         .btn { 
             width: 100%; 
-            padding: 20px; 
+            padding: 18px; 
             margin: 10px 0; 
             font-size: 16px; 
             font-weight: 700; 
             border: none; 
             border-radius: 18px; 
             cursor: pointer; 
-            text-decoration: none; 
-            text-align: center; 
-            display: block; 
-            transition: all 0.3s ease;
             background: #5d2d91; 
             color: white; 
             text-transform: uppercase;
+            box-shadow: 0 8px 15px rgba(93, 45, 145, 0.2);
+            transition: all 0.3s;
+            position: relative;
         }
         
-        .btn:hover { background: #4a2475; transform: translateY(-3px); }
+        .btn:hover { background: #4a2475; transform: translateY(-2px); }
 
-        .footer { 
-            color: #5d2d91; 
-            margin-top: 25px; 
-            font-size: 13px; 
-            text-align: center; 
-            font-weight: 600;
+        .footer { color: #5d2d91; margin-top: 25px; font-size: 13px; font-weight: 600; }
+
+        .logout-link { font-size: 12px; color: #5d2d91; cursor: pointer; margin-top: 15px; text-decoration: underline; }
+
+        /* പൊട്ടിത്തെറിക്കുന്ന കണങ്ങൾ - സിമ്പിൾ ആയി */
+        .particle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 100;
+            animation: explode 3s forwards;
         }
 
-        .logout-link {
-            font-size: 12px;
-            color: #5d2d91;
-            cursor: pointer;
-            margin-top: 15px;
-            text-decoration: underline;
+        @keyframes explode {
+            0% { transform: translate(0, 0); opacity: 1; }
+            100% { transform: translate(var(--tx), var(--ty)); opacity: 0; }
         }
     </style>
 </head>
 <body>
 
-    <div class="portal-card">
+    <div class="portal-card" id="portal-card">
         <div class="logo-container">
             <img src="apollo_tyres.png" alt="Apollo Logo" class="header-logo" onclick="adminAccess()">
         </div>
 
         <div id="login-section">
-            <h1 id="login-title">Set Password</h1>
-            <p id="login-desc" style="font-size: 12px; margin-bottom: 10px;">ഏതെങ്കിലും 5 അക്ക നമ്പർ നൽകുക</p>
-            <input type="number" id="passInput" placeholder="Enter 5-digit Number" oninput="if(this.value.length > 5) this.value = this.value.slice(0, 5);">
-            <button class="btn" onclick="handleLogin()">Submit</button>
+            <h1 id="login-title">Login</h1>
+            <input type="number" id="passInput" placeholder="Enter 5-digit PIN" oninput="if(this.value.length > 5) this.value = this.value.slice(0, 5);">
+            <div id="btn-wrap" style="position:relative; width:100%;">
+                <button class="btn" id="login-btn" onclick="handleLogin()">Login</button>
+            </div>
         </div>
 
         <div id="main-content">
             <h1>Employee Portal</h1>
-            <a href="wax_search.html" class="btn">View Wax Weight</a>
-            <a href="wa_data.html" class="btn">Work Away Usage</a>
-            <a href="location.html" class="btn">Tag QR & Location</a>
-            
+            <a href="wax_search.html" class="btn" style="display:block; text-decoration:none;">View Wax Weight</a>
+            <a href="wa_data.html" class="btn" style="display:block; text-decoration:none;">Work Away Usage</a>
+            <a href="location.html" class="btn" style="display:block; text-decoration:none;">Tag QR & Location</a>
             <div class="logout-link" onclick="logout()">Reset Password</div>
         </div>
 
@@ -147,78 +131,81 @@
 
     <script>
         window.onload = function() {
-            const savedPass = localStorage.getItem("userPassword");
-            const isLoggedIn = localStorage.getItem("isLoggedIn");
-
-            if (savedPass) {
-                document.getElementById("login-title").innerText = "Login";
-                document.getElementById("login-desc").innerText = "നേരത്തെ നൽകിയ നമ്പർ ഉപയോഗിക്കുക";
-            }
-
-            if (isLoggedIn === "true") {
-                showPortal();
-            }
+            if (localStorage.getItem("isLoggedIn") === "true") showPortal();
         };
 
         function handleLogin() {
             const enteredPass = document.getElementById("passInput").value;
             const savedPass = localStorage.getItem("userPassword");
+            const loginBtn = document.getElementById("login-btn");
 
             if (enteredPass.length !== 5) {
-                alert("ദയവായി 5 അക്ക നമ്പർ നൽകുക!");
+                alert("5 അക്ക നമ്പർ നൽകുക!");
                 return;
             }
 
-            if (!savedPass) {
-                // ആദ്യത്തെ തവണയാണെങ്കിൽ അടിച്ച നമ്പർ പാസ്‌വേഡ് ആയി സേവ് ചെയ്യുന്നു
-                localStorage.setItem("userPassword", enteredPass);
-                localStorage.setItem("isLoggedIn", "true");
-                showPortal();
-            } else if (enteredPass === savedPass) {
-                // നേരത്തെ സേവ് ചെയ്ത നമ്പറാണെങ്കിൽ ലോഗിൻ ആകുന്നു
-                localStorage.setItem("isLoggedIn", "true");
-                showPortal();
-            } else {
-                alert("തെറ്റായ പാസ്‌വേഡ്!");
+            if(navigator.vibrate) navigator.vibrate(80);
+
+            // പൊട്ടിത്തെറി എഫക്റ്റ്
+            createExplosion(loginBtn);
+            loginBtn.innerText = "Checking...";
+            loginBtn.style.opacity = "0.7";
+
+            setTimeout(() => {
+                if (!savedPass || enteredPass === savedPass) {
+                    if(!savedPass) localStorage.setItem("userPassword", enteredPass);
+                    localStorage.setItem("isLoggedIn", "true");
+                    showPortal();
+                } else {
+                    alert("തെറ്റായ പാസ്‌വേഡ്!");
+                    loginBtn.innerText = "Login";
+                    loginBtn.style.opacity = "1";
+                    removeParticles();
+                }
+            }, 3000);
+        }
+
+        function createExplosion(el) {
+            const wrap = document.getElementById('btn-wrap');
+            const colors = ['#5d2d91', '#9c27b0', '#ff9800'];
+            for (let i = 0; i < 40; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.style.background = colors[Math.floor(Math.random() * colors.length)];
+                p.style.left = "50%";
+                p.style.top = "50%";
+                const tx = (Math.random() - 0.5) * 400 + 'px';
+                const ty = (Math.random() - 0.5) * 400 + 'px';
+                p.style.setProperty('--tx', tx);
+                p.style.setProperty('--ty', ty);
+                wrap.appendChild(p);
             }
         }
+
+        function removeParticles() { document.querySelectorAll('.particle').forEach(p => p.remove()); }
 
         function showPortal() {
             document.getElementById("login-section").style.display = "none";
             document.getElementById("main-content").style.display = "block";
+            removeParticles();
         }
 
         function logout() {
-            if (confirm("പാസ്‌വേഡ് മാറ്റി പുതിയത് സെറ്റ് ചെയ്യണോ?")) {
-                localStorage.clear();
-                location.reload();
-            }
+            if (confirm("Reset password?")) { localStorage.clear(); location.reload(); }
         }
 
         function adminAccess() {
-            let pass = prompt("Admin Password:");
-            if (pass === "1453") {
-                window.location.href = "Gist_data_entry.html"; 
-            }
+            if (prompt("Admin Password:") === "1453") window.location.href = "Gist_data_entry.html";
         }
 
-        // --- NAVIGATION & VIBRATION ---
+        // Navigation lock
         (function() {
-            history.pushState({page: "home"}, "");
+            history.pushState({p:1}, "");
             window.onpopstate = function() {
-                if (confirm("ആപ്പിൽ നിന്ന് പുറത്ത് പോകണോ?")) {
-                    navigator.app ? navigator.app.exitApp() : window.close();
-                } else {
-                    history.pushState({page: "home"}, "");
-                }
+                if (confirm("പുറത്ത് പോകണോ?")) { navigator.app ? navigator.app.exitApp() : window.close(); }
+                else history.pushState({p:1}, "");
             };
         })();
-
-        document.querySelectorAll('.btn').forEach(button => {
-            button.addEventListener('click', () => {
-                if (navigator.vibrate) navigator.vibrate(40);
-            });
-        });
     </script>
 </body>
 </html>
