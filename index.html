@@ -41,6 +41,9 @@
             border: 1px solid rgba(255, 255, 255, 0.4);
         }
 
+        #login-section { text-align: center; width: 100%; }
+        #main-content { display: none; width: 100%; }
+
         .logo-container {
             display: flex;
             justify-content: center;
@@ -54,7 +57,6 @@
             cursor: pointer;
             transition: transform 0.2s;
         }
-        .header-logo:hover { transform: scale(1.05); }
 
         h1 { 
             color: #5d2d91; 
@@ -62,7 +64,22 @@
             font-size: 28px; 
             text-align: center; 
             font-weight: 800;
-            letter-spacing: 1px;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            border: 2px solid #5d2d91;
+            font-size: 18px;
+            text-align: center;
+            box-sizing: border-box;
+            -moz-appearance: textfield;
+        }
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
         }
 
         .btn { 
@@ -78,21 +95,12 @@
             text-align: center; 
             display: block; 
             transition: all 0.3s ease;
-            box-shadow: 0 8px 15px rgba(93, 45, 145, 0.2);
             background: #5d2d91; 
             color: white; 
             text-transform: uppercase;
-            letter-spacing: 1px;
-            box-sizing: border-box;
         }
         
-        .btn:hover {
-            background: #4a2475;
-            transform: translateY(-3px);
-            box-shadow: 0 12px 20px rgba(93, 45, 145, 0.3);
-        }
-
-        .btn:active { transform: scale(0.97); }
+        .btn:hover { background: #4a2475; transform: translateY(-3px); }
 
         .footer { 
             color: #5d2d91; 
@@ -100,7 +108,14 @@
             font-size: 13px; 
             text-align: center; 
             font-weight: 600;
-            opacity: 0.8;
+        }
+
+        .logout-link {
+            font-size: 12px;
+            color: #5d2d91;
+            cursor: pointer;
+            margin-top: 15px;
+            text-decoration: underline;
         }
     </style>
 </head>
@@ -108,78 +123,102 @@
 
     <div class="portal-card">
         <div class="logo-container">
-            <img src="apollo_tyres.png" alt="Apollo Logo" class="header-logo" onclick="checkPassword()">
+            <img src="apollo_tyres.png" alt="Apollo Logo" class="header-logo" onclick="adminAccess()">
         </div>
 
-        <h1>Employee Portal</h1>
+        <div id="login-section">
+            <h1 id="login-title">Set Password</h1>
+            <p id="login-desc" style="font-size: 12px; margin-bottom: 10px;">ഏതെങ്കിലും 5 അക്ക നമ്പർ നൽകുക</p>
+            <input type="number" id="passInput" placeholder="Enter 5-digit Number" oninput="if(this.value.length > 5) this.value = this.value.slice(0, 5);">
+            <button class="btn" onclick="handleLogin()">Submit</button>
+        </div>
 
-        <a href="wax_search.html" class="btn">View Wax Weight</a>
-        <a href="wa_data.html" class="btn">Work Away Usage</a>
-        <a href="location.html" class="btn">Tag QR & Location</a>
+        <div id="main-content">
+            <h1>Employee Portal</h1>
+            <a href="wax_search.html" class="btn">View Wax Weight</a>
+            <a href="wa_data.html" class="btn">Work Away Usage</a>
+            <a href="location.html" class="btn">Tag QR & Location</a>
+            
+            <div class="logout-link" onclick="logout()">Reset Password</div>
+        </div>
 
         <div class="footer">Developed by Jefin</div>
     </div>
 
     <script>
-        function checkPassword() {
-            let pass = prompt("Enter Password:");
-            if (pass === "1453") {
-                window.location.href = "Gist_data_entry.html"; 
-            } else if (pass !== null && pass !== "") {
-                alert("Incorrect Password!");
+        window.onload = function() {
+            const savedPass = localStorage.getItem("userPassword");
+            const isLoggedIn = localStorage.getItem("isLoggedIn");
+
+            if (savedPass) {
+                document.getElementById("login-title").innerText = "Login";
+                document.getElementById("login-desc").innerText = "നേരത്തെ നൽകിയ നമ്പർ ഉപയോഗിക്കുക";
             }
-        }
 
-        // --- NAVIGATION LOGIC ---
-        
-        // ലോഡ് ആകുമ്പോൾ ഒരു സ്റ്റേറ്റ് പുഷ് ചെയ്യുന്നു
-        history.pushState({page: 1}, "", "");
-
-        window.onpopstate = function(event) {
-            // നാവിഗേഷൻ ബാക്ക് ബട്ടൺ അമർത്തുമ്പോൾ
-            if (confirm("നിങ്ങൾക്ക് ആപ്പിൽ നിന്ന് പുറത്ത് പോകണോ? (Close App?)")) {
-                // യൂസർ OK അടിച്ചാൽ ആപ്പിൽ നിന്ന് പുറത്ത് പോകാം
-                // ബ്രൗസറിൽ ആണെങ്കിൽ ഹിസ്റ്ററിയിൽ പിന്നോട്ട് പോകും
-                window.history.back();
-            } else {
-                // കൺഫർമേഷൻ വേണ്ടെന്ന് വെച്ചാൽ ഹിസ്റ്ററി റീസെറ്റ് ചെയ്യുന്നു
-                history.pushState({page: 1}, "", "");
+            if (isLoggedIn === "true") {
+                showPortal();
             }
         };
 
-        // വൈബ്രേഷൻ ഫീഡ്‌ബാക്ക് (Optional)
+        function handleLogin() {
+            const enteredPass = document.getElementById("passInput").value;
+            const savedPass = localStorage.getItem("userPassword");
+
+            if (enteredPass.length !== 5) {
+                alert("ദയവായി 5 അക്ക നമ്പർ നൽകുക!");
+                return;
+            }
+
+            if (!savedPass) {
+                // ആദ്യത്തെ തവണയാണെങ്കിൽ അടിച്ച നമ്പർ പാസ്‌വേഡ് ആയി സേവ് ചെയ്യുന്നു
+                localStorage.setItem("userPassword", enteredPass);
+                localStorage.setItem("isLoggedIn", "true");
+                showPortal();
+            } else if (enteredPass === savedPass) {
+                // നേരത്തെ സേവ് ചെയ്ത നമ്പറാണെങ്കിൽ ലോഗിൻ ആകുന്നു
+                localStorage.setItem("isLoggedIn", "true");
+                showPortal();
+            } else {
+                alert("തെറ്റായ പാസ്‌വേഡ്!");
+            }
+        }
+
+        function showPortal() {
+            document.getElementById("login-section").style.display = "none";
+            document.getElementById("main-content").style.display = "block";
+        }
+
+        function logout() {
+            if (confirm("പാസ്‌വേഡ് മാറ്റി പുതിയത് സെറ്റ് ചെയ്യണോ?")) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+
+        function adminAccess() {
+            let pass = prompt("Admin Password:");
+            if (pass === "1453") {
+                window.location.href = "Gist_data_entry.html"; 
+            }
+        }
+
+        // --- NAVIGATION & VIBRATION ---
+        (function() {
+            history.pushState({page: "home"}, "");
+            window.onpopstate = function() {
+                if (confirm("ആപ്പിൽ നിന്ന് പുറത്ത് പോകണോ?")) {
+                    navigator.app ? navigator.app.exitApp() : window.close();
+                } else {
+                    history.pushState({page: "home"}, "");
+                }
+            };
+        })();
+
         document.querySelectorAll('.btn').forEach(button => {
             button.addEventListener('click', () => {
                 if (navigator.vibrate) navigator.vibrate(40);
             });
         });
-    </script>
-    <script>
-    // 1. ആപ്പ് ലോഡ് ചെയ്യുമ്പോൾ ഹിസ്റ്ററി ലോക്ക് ചെയ്യുന്നു
-    (function() {
-        var currentState = { page: "home" };
-        history.pushState(currentState, "");
-
-        window.onpopstate = function(event) {
-            // ഫോണിലെ ബാക്ക് ബട്ടൺ അമർത്തുമ്പോൾ ഇത് പ്രവർത്തിക്കും
-            if (confirm("നിങ്ങൾക്ക് ആപ്പിൽ നിന്ന് പുറത്ത് പോകണോ?")) {
-                // യൂസർ ശരി എന്ന് പറഞ്ഞാൽ മാത്രം ആപ്പ് ക്ലോസ് ചെയ്യുക
-                navigator.app ? navigator.app.exitApp() : window.close();
-            } else {
-                // അല്ലെങ്കിൽ ആപ്പിൽ തന്നെ നിർത്തുക, ഹിസ്റ്ററി വീണ്ടും ലോക്ക് ചെയ്യുക
-                history.pushState(currentState, "");
-            }
-        };
-    })();
-
-    function checkPassword() {
-        let pass = prompt("Enter Password:");
-        if (pass === "1453") {
-            window.location.href = "Gist_data_entry.html"; 
-        } else if (pass !== null && pass !== "") {
-            alert("Incorrect Password!");
-        }
-    }
     </script>
 </body>
 </html>
