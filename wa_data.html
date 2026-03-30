@@ -188,7 +188,16 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     
-    document.getElementById('usageDate').valueAsDate = new Date();
+    // പേജ് ലോഡ് ആകുമ്പോൾ ഓട്ടോമാറ്റിക് ആയി ID സെറ്റ് ചെയ്യുന്നു
+    window.onload = function() {
+        document.getElementById('usageDate').valueAsDate = new Date();
+        
+        // മെയിൻ പേജിൽ നിന്ന് പാസ്‌വേഡ്/ID എടുക്കുന്നു
+        const savedID = localStorage.getItem("userPassword");
+        if(savedID) {
+            document.getElementById('empID').value = savedID;
+        }
+    };
 
     db.ref('compounds').on('value', (snapshot) => {
         const data = snapshot.val();
@@ -215,7 +224,6 @@
                 if(navigator.vibrate) navigator.vibrate(30);
             };
             
-            // പ്രധാന മാറ്റം ഇവിടെയാണ്
             const mixWithText = item.mixingFor ? item.mixingFor : (item.ipo || 'N/A');
             
             div.innerHTML = `
