@@ -215,10 +215,13 @@
                 if(navigator.vibrate) navigator.vibrate(30);
             };
             
+            // പ്രധാന മാറ്റം ഇവിടെയാണ്
+            const mixWithText = item.mixingFor ? item.mixingFor : (item.ipo || 'N/A');
+            
             div.innerHTML = `
                 <span class="bal-badge">${item.balance} Batch Left</span>
-                <span class="compound-header">${item.code} | W/A ${item.wa}</span>
-                <div style="font-size: 11px; color: #64748b; margin-top: 3px;">IPO: ${item.ipo || 'N/A'}</div>
+                <span class="compound-header">${item.code} W/A ${item.wa}</span>
+                <div style="font-size: 11px; color: #64748b; margin-top: 3px;">use with... ${mixWithText}</div>
                 <div class="batch-info-row">
                     <span><b>Dt/Sh:</b> ${item.displayTag}</span>
                     <span><b>Skid:</b> ${item.skidNo}</span>
@@ -256,7 +259,12 @@
             db.ref('compounds/' + key).update({ balance: parseFloat(newBalance) });
 
             db.ref('compounds/' + key + '/usageHistory').push({
-                empID: empID, usedQty: usedQty, date: formattedDate, time: timeStr, shift: shift, timestamp: Date.now()
+                empID: empID, 
+                usedQty: usedQty, 
+                date: formattedDate, 
+                time: timeStr, 
+                shift: shift, 
+                timestamp: Date.now()
             }).then(() => {
                 alert(usedQty + " Batch അപ്‌ഡേറ്റ് ചെയ്തു!");
                 document.getElementById('qtyToUse').value = "";
@@ -265,18 +273,17 @@
         });
     }
 </script>
-    <script>
-    // 1. ഹിസ്റ്ററിയിൽ ഒരു സ്റ്റേറ്റ് ഉണ്ടാക്കുന്നു
-    history.pushState(null, null, location.href);
 
+<script>
+    // Back button handling
+    history.pushState(null, null, location.href);
     window.onpopstate = function () {
-        // 2. ഫോണിലെ ബാക്ക് ബട്ടൺ അമർത്തുമ്പോൾ ഹോം പേജിലേക്ക് പോകുന്നു
         window.location.href = "index.html";
     };
 
-    // ബട്ടണുകൾ അമർത്തുമ്പോൾ വൈബ്രേഷൻ ഫീഡ്‌ബാക്ക് (Optional)
+    // Vibration feedback
     if (navigator.vibrate) {
-        document.querySelectorAll('button, .btn, .list-item').forEach(el => {
+        document.querySelectorAll('button, .stock-item').forEach(el => {
             el.addEventListener('click', () => navigator.vibrate(40));
         });
     }
