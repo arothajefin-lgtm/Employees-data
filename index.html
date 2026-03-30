@@ -3,66 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="google" content="notranslate">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Employee Portal</title>
     <style>
+        * { box-sizing: border-box; }
         body { 
-            background: linear-gradient(-45deg, #ffffff, #f3e5f5, #5d2d91, #9c27b0);
-            background-size: 400% 400%;
-            animation: whitePurpleBG 15s ease infinite;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: #e6dcf0; /* ഇമേജിലെ പോലെ ലൈറ്റ് പർപ്പിൾ ബാക്ക്ഗ്രൗണ്ട് */
+            font-family: 'Segoe UI', Tahoma, sans-serif; 
             display: flex; 
-            flex-direction: column; 
             align-items: center; 
             justify-content: center; 
             min-height: 100vh; 
             margin: 0; 
             padding: 20px;
-            box-sizing: border-box;
             overflow: hidden;
         }
 
-        @keyframes whitePurpleBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
         .portal-card {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(10px);
+            background: white;
             padding: 30px;
-            border-radius: 25px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            border-radius: 40px; /* ഇമേജിലെ പോലെ നല്ല കർവ്ഡ് ഡിസൈൻ */
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             width: 100%;
-            max-width: 420px;
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            position: relative;
+            max-width: 360px;
+            text-align: center;
         }
 
-        #login-section, #main-content { width: 100%; text-align: center; }
-        #main-content { display: none; }
+        .logo-container { margin-bottom: 10px; }
+        .header-logo { width: 140px; height: auto; cursor: pointer; }
 
-        .logo-container { width: 100%; margin-bottom: 15px; }
-        .header-logo { width: 80%; height: auto; cursor: pointer; }
-
-        h1 { color: #5d2d91; margin: 0 0 20px 0; font-size: 28px; font-weight: 800; }
+        h1 { color: #5d2d91; margin: 10px 0 25px 0; font-size: 24px; font-weight: 800; }
 
         input[type="number"] {
             width: 100%;
             padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 12px;
+            margin-bottom: 15px;
+            border-radius: 15px;
             border: 2px solid #5d2d91;
             font-size: 18px;
             text-align: center;
-            box-sizing: border-box;
+            outline: none;
         }
 
-        /* പവർഫുൾ ആയ പഴയ ബട്ടൺ സ്റ്റൈൽ */
         .btn { 
             width: 100%; 
             padding: 18px; 
@@ -70,33 +52,30 @@
             font-size: 16px; 
             font-weight: 700; 
             border: none; 
-            border-radius: 18px; 
+            border-radius: 20px; 
             cursor: pointer; 
             background: #5d2d91; 
             color: white; 
             text-transform: uppercase;
-            box-shadow: 0 8px 15px rgba(93, 45, 145, 0.2);
-            transition: all 0.3s;
-            position: relative;
+            text-decoration: none;
+            display: block;
+            transition: 0.2s;
         }
         
-        .btn:hover { background: #4a2475; transform: translateY(-2px); }
+        .btn:active { transform: scale(0.96); }
 
-        .footer { color: #5d2d91; margin-top: 25px; font-size: 13px; font-weight: 600; }
+        .footer { color: #5d2d91; margin-top: 15px; font-size: 13px; font-weight: 600; }
+        .logout-link { font-size: 12px; color: #5d2d91; cursor: pointer; margin-top: 10px; display: block; }
 
-        .logout-link { font-size: 12px; color: #5d2d91; cursor: pointer; margin-top: 15px; text-decoration: underline; }
-
-        /* പൊട്ടിത്തെറിക്കുന്ന കണങ്ങൾ - സിമ്പിൾ ആയി */
+        /* പൊട്ടിത്തെറി എഫക്റ്റ് */
         .particle {
             position: absolute;
             width: 6px;
             height: 6px;
             border-radius: 50%;
             pointer-events: none;
-            z-index: 100;
             animation: explode 3s forwards;
         }
-
         @keyframes explode {
             0% { transform: translate(0, 0); opacity: 1; }
             100% { transform: translate(var(--tx), var(--ty)); opacity: 0; }
@@ -105,25 +84,25 @@
 </head>
 <body>
 
-    <div class="portal-card" id="portal-card">
+    <div class="portal-card">
         <div class="logo-container">
             <img src="apollo_tyres.png" alt="Apollo Logo" class="header-logo" onclick="adminAccess()">
         </div>
 
         <div id="login-section">
             <h1 id="login-title">Login</h1>
-            <input type="number" id="passInput" placeholder="Enter 5-digit PIN" oninput="if(this.value.length > 5) this.value = this.value.slice(0, 5);">
-            <div id="btn-wrap" style="position:relative; width:100%;">
+            <input type="number" id="passInput" placeholder="•••••" oninput="if(this.value.length > 5) this.value = this.value.slice(0, 5);">
+            <div id="btn-wrap" style="position:relative;">
                 <button class="btn" id="login-btn" onclick="handleLogin()">Login</button>
             </div>
         </div>
 
-        <div id="main-content">
+        <div id="main-content" style="display: none;">
             <h1>Employee Portal</h1>
-            <a href="wax_search.html" class="btn" style="display:block; text-decoration:none;">View Wax Weight</a>
-            <a href="wa_data.html" class="btn" style="display:block; text-decoration:none;">Work Away Usage</a>
-            <a href="location.html" class="btn" style="display:block; text-decoration:none;">Tag QR & Location</a>
-            <div class="logout-link" onclick="logout()">Reset Password</div>
+            <a href="wax_search.html" class="btn">View Wax Weight</a>
+            <a href="wa_data.html" class="btn">Work Away Usage</a>
+            <a href="location.html" class="btn">Tag QR & Location</a>
+            <span class="logout-link" onclick="logout()">Reset Password</span>
         </div>
 
         <div class="footer">Developed by Jefin</div>
@@ -140,16 +119,13 @@
             const loginBtn = document.getElementById("login-btn");
 
             if (enteredPass.length !== 5) {
-                alert("5 അക്ക നമ്പർ നൽകുക!");
+                alert("5 അക്ക PIN നൽകുക!");
                 return;
             }
 
             if(navigator.vibrate) navigator.vibrate(80);
-
-            // പൊട്ടിത്തെറി എഫക്റ്റ്
-            createExplosion(loginBtn);
-            loginBtn.innerText = "Checking...";
-            loginBtn.style.opacity = "0.7";
+            createExplosion();
+            loginBtn.innerText = "Processing...";
 
             setTimeout(() => {
                 if (!savedPass || enteredPass === savedPass) {
@@ -157,25 +133,22 @@
                     localStorage.setItem("isLoggedIn", "true");
                     showPortal();
                 } else {
-                    alert("തെറ്റായ പാസ്‌വേഡ്!");
+                    alert("Incorrect PIN!");
                     loginBtn.innerText = "Login";
-                    loginBtn.style.opacity = "1";
                     removeParticles();
                 }
             }, 3000);
         }
 
-        function createExplosion(el) {
+        function createExplosion() {
             const wrap = document.getElementById('btn-wrap');
-            const colors = ['#5d2d91', '#9c27b0', '#ff9800'];
-            for (let i = 0; i < 40; i++) {
+            for (let i = 0; i < 30; i++) {
                 const p = document.createElement('div');
                 p.className = 'particle';
-                p.style.background = colors[Math.floor(Math.random() * colors.length)];
-                p.style.left = "50%";
-                p.style.top = "50%";
-                const tx = (Math.random() - 0.5) * 400 + 'px';
-                const ty = (Math.random() - 0.5) * 400 + 'px';
+                p.style.background = '#5d2d91';
+                p.style.left = "50%"; p.style.top = "50%";
+                const tx = (Math.random() - 0.5) * 150 + 'px';
+                const ty = (Math.random() - 0.5) * 150 + 'px';
                 p.style.setProperty('--tx', tx);
                 p.style.setProperty('--ty', ty);
                 wrap.appendChild(p);
@@ -187,22 +160,21 @@
         function showPortal() {
             document.getElementById("login-section").style.display = "none";
             document.getElementById("main-content").style.display = "block";
-            removeParticles();
         }
 
         function logout() {
-            if (confirm("Reset password?")) { localStorage.clear(); location.reload(); }
+            if (confirm("Reset Password?")) { localStorage.clear(); location.reload(); }
         }
 
         function adminAccess() {
             if (prompt("Admin Password:") === "1453") window.location.href = "Gist_data_entry.html";
         }
 
-        // Navigation lock
+        // Back button protection
         (function() {
             history.pushState({p:1}, "");
             window.onpopstate = function() {
-                if (confirm("പുറത്ത് പോകണോ?")) { navigator.app ? navigator.app.exitApp() : window.close(); }
+                if (confirm("Exit App?")) { navigator.app ? navigator.app.exitApp() : window.close(); }
                 else history.pushState({p:1}, "");
             };
         })();
