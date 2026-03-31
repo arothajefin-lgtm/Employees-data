@@ -4,169 +4,72 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Employee Notice Board</title>
-    
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
-
     <style>
-        body { 
-            font-family: 'Segoe UI', Tahoma, sans-serif; 
-            background: #e6dcf0; 
-            padding: 15px; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            margin: 0;
-        }
-
-        .page-title {
-            color: #5d2d91;
-            font-weight: 800;
-            text-transform: uppercase;
-            margin: 20px 0;
-            font-size: 22px;
-            letter-spacing: 1px;
-        }
-
-        #notices-container {
-            width: 100%;
-            max-width: 500px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .notice-card { 
-            width: 100%; 
-            border: 2.5px solid #000; 
-            background: #fff; 
-            box-sizing: border-box; 
-            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
-        }
-
-        .header { 
-            text-align: center; 
-            font-size: 26px; 
-            font-weight: bold; 
-            border-bottom: 2.5px solid #000; 
-            padding: 12px; 
-            background: #fff;
-            letter-spacing: 3px;
-        }
-
-        .sub-header { 
-            display: flex; 
-            border-bottom: 2.5px solid #000; 
-            font-size: 14px; 
-            background: #fafafa;
-        }
-
-        .banbury { 
-            border-right: 2.5px solid #000; 
-            flex: 1; 
-            padding: 8px 12px; 
-            font-weight: bold; 
-        }
-
-        .date-section { 
-            flex: 1; 
-            text-align: right; 
-            padding: 8px 12px; 
-            font-weight: bold; 
-        }
-
-        .content { 
-            padding: 25px; 
-            min-height: 120px; 
-        }
-
-        .msg-line { 
-            font-size: 20px; 
-            line-height: 1.8; 
-            margin-bottom: 15px; 
-            color: #000; 
-        }
-
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #e6dcf0; padding: 15px; display: flex; flex-direction: column; align-items: center; margin: 0; }
+        .page-title { color: #5d2d91; font-weight: 800; text-transform: uppercase; margin: 20px 0; font-size: 22px; }
+        #notices-container { width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 20px; }
+        .notice-card { width: 100%; border: 2.5px solid #000; background: #fff; box-shadow: 0 6px 15px rgba(0,0,0,0.1); }
+        .header { text-align: center; font-size: 26px; font-weight: bold; border-bottom: 2.5px solid #000; padding: 12px; letter-spacing: 3px; }
+        .sub-header { display: flex; border-bottom: 2.5px solid #000; font-size: 14px; background: #fafafa; }
+        .banbury { border-right: 2.5px solid #000; flex: 1; padding: 8px 12px; font-weight: bold; }
+        .date-section { flex: 1; text-align: right; padding: 8px 12px; font-weight: bold; }
+        .content { padding: 25px; min-height: 120px; }
+        .msg-line { font-size: 20px; line-height: 1.8; margin-bottom: 15px; color: #000; }
         .bold { font-weight: bold; text-decoration: underline; }
-
-        .loading-text { color: #5d2d91; margin-top: 50px; font-weight: bold; }
-        .no-notice { color: #888; margin-top: 50px; font-style: italic; background: white; padding: 20px; border-radius: 15px; }
-
-        @media print {
-            .page-title { display: none; }
-            body { background: white; padding: 0; }
-            .notice-card { box-shadow: none; margin-bottom: 20px; page-break-after: always; }
-        }
+        .no-notice { color: #888; margin-top: 50px; background: white; padding: 20px; border-radius: 15px; }
     </style>
 </head>
 <body>
+    <h2 class="page-title">Active Notices</h2>
+    <div id="notices-container"><div style="color:#5d2d91;">Loading...</div></div>
 
-<h2 class="page-title">Active Notices</h2>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyB4akOCR4LTOK6HyvnxwMc7SKpbrMzjNC0",
+            authDomain: "compound-workaway.firebaseapp.com",
+            databaseURL: "https://compound-workaway-default-rtdb.firebaseio.com",
+            projectId: "compound-workaway",
+            storageBucket: "compound-workaway.firebasestorage.app",
+            messagingSenderId: "1020479561110",
+            appId: "1:1020479561110:web:f1cb9448e2bcf9184811b7"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
 
-<div id="notices-container">
-    <div class="loading-text">Loading notices...</div>
-</div>
+        function formatDate(dateStr) {
+            if(!dateStr) return "--.--.----";
+            const d = new Date(dateStr);
+            return d.getDate().toString().padStart(2,'0') + '.' + (d.getMonth()+1).toString().padStart(2,'0') + '.' + d.getFullYear();
+        }
 
-<script>
-// Firebase Config (അതേ കോൺഫിഗറേഷൻ തന്നെ)
-const firebaseConfig = {
-  apiKey: "AIzaSyB4akOCR4LTOK6HyvnxwMc7SKpbrMzjNC0",
-  authDomain: "compound-workaway.firebaseapp.com",
-  databaseURL: "https://compound-workaway-default-rtdb.firebaseio.com",
-  projectId: "compound-workaway",
-  storageBucket: "compound-workaway.firebasestorage.app",
-  messagingSenderId: "1020479561110",
-  appId: "1:1020479561110:web:f1cb9448e2bcf9184811b7"
-};
+        database.ref('notices').on('value', (snapshot) => {
+            const container = document.getElementById('notices-container');
+            const data = snapshot.val();
+            if (!data) { container.innerHTML = '<div class="no-notice">നോട്ടീസുകൾ ലഭ്യമല്ല.</div>'; return; }
 
-firebase.initializeApp(firebaseConfig);
-const database = firebase.database();
+            const allNotices = Object.values(data);
+            // പേജ് തുറന്നാൽ ബാഡ്ജ് കൗണ്ട് റീസെറ്റ് ചെയ്യാൻ
+            localStorage.setItem('lastSeenNoticeCount', allNotices.length);
+            
+            allNotices.sort((a, b) => b.timestamp - a.timestamp);
 
-function formatDate(dateStr) {
-    if(!dateStr) return "--.--.----";
-    const d = new Date(dateStr);
-    return d.getDate().toString().padStart(2,'0') + '.' + (d.getMonth()+1).toString().padStart(2,'0') + '.' + d.getFullYear();
-}
-
-// ഡാറ്റാബേസിൽ നിന്ന് ലൈവ് ആയി വിവരങ്ങൾ എടുക്കുന്നു
-database.ref('notices').on('value', (snapshot) => {
-    const container = document.getElementById('notices-container');
-    const data = snapshot.val();
-    
-    if (!data) {
-        container.innerHTML = '<div class="no-notice">നിലവിൽ നോട്ടീസുകൾ ഒന്നും ലഭ്യമല്ല.</div>';
-        return;
-    }
-
-    const allNotices = Object.values(data);
-    
-    // സമയം അനുസരിച്ച് സോർട്ട് ചെയ്യുന്നു (പുതിയത് മുകളിൽ)
-    allNotices.sort((a, b) => b.timestamp - a.timestamp);
-
-    container.innerHTML = allNotices.map(notice => {
-        const fmtDate = formatDate(notice.date);
-        const isMulti = notice.wgtVal && (notice.wgtVal.includes(',') || notice.wgtVal.includes(' ') || notice.wgtVal.includes('&'));
-        const wgtText = isMulti ? "എന്നിവയുടെ weight-ൽ മാറ്റമുണ്ട്." : "ന്റെ weight-ൽ മാറ്റമുണ്ട്.";
-
-        return `
-        <div class="notice-card">
-            <div class="header">NOTICE</div>
-            <div class="sub-header">
-                <div class="banbury">BANBURY</div>
-                <div class="date-section">DATE : ${fmtDate}</div>
-            </div>
-            <div class="content">
-                <div class="msg-line">
-                    <span class="bold">${notice.mainCode || '---'}</span> മിക്സിങ് സ്റ്റേജിൽ, <span class="bold">${fmtDate}</span> <span class="bold">${notice.shift}</span> മുതൽ,
-                </div>
-                ${notice.incChecked && notice.incVal ? `<div class="msg-line"><span class="bold">CODE ${notice.incVal}</span> ഉൾപ്പെടുത്തിയിരിക്കുന്നു.</div>` : ''}
-                ${notice.excChecked && notice.excVal ? `<div class="msg-line"><span class="bold">CODE ${notice.excVal}</span> ഒഴിവാക്കിയിരിക്കുന്നു.</div>` : ''}
-                ${notice.wgtChecked && notice.wgtVal ? `<div class="msg-line" style="margin-top:10px;"><span class="bold">${notice.wgtVal}</span> ${wgtText}</div>` : ''}
-            </div>
-        </div>`;
-    }).join('');
-});
-</script>
-
+            container.innerHTML = allNotices.map(notice => {
+                const fmtDate = formatDate(notice.date);
+                return `
+                <div class="notice-card">
+                    <div class="header">NOTICE</div>
+                    <div class="sub-header"><div class="banbury">BANBURY</div><div class="date-section">DATE : ${fmtDate}</div></div>
+                    <div class="content">
+                        <div class="msg-line"><span class="bold">${notice.mainCode}</span> മിക്സിങ് സ്റ്റേജിൽ, <span class="bold">${fmtDate}</span> <span class="bold">${notice.shift}</span> മുതൽ,</div>
+                        ${notice.incChecked ? `<div class="msg-line"><span class="bold">CODE ${notice.incVal}</span> ഉൾപ്പെടുത്തിയിരിക്കുന്നു.</div>` : ''}
+                        ${notice.excChecked ? `<div class="msg-line"><span class="bold">CODE ${notice.excVal}</span> ഒഴിവാക്കിയിരിക്കുന്നു.</div>` : ''}
+                        ${notice.wgtChecked ? `<div class="msg-line"><span class="bold">${notice.wgtVal}</span> weight-ൽ മാറ്റമുണ്ട്.</div>` : ''}
+                    </div>
+                </div>`;
+            }).join('');
+        });
+    </script>
 </body>
 </html>
