@@ -5,10 +5,14 @@
     <meta name="google" content="notranslate">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Employee Portal</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+
     <style>
         * { box-sizing: border-box; }
         body { 
-            background: #e6dcf0; /* ഇമേജിലെ പോലെ ലൈറ്റ് പർപ്പിൾ ബാക്ക്ഗ്രൗണ്ട് */
+            background: #e6dcf0; 
             font-family: 'Segoe UI', Tahoma, sans-serif; 
             display: flex; 
             align-items: center; 
@@ -22,7 +26,7 @@
         .portal-card {
             background: white;
             padding: 30px;
-            border-radius: 40px; /* ഇമേജിലെ പോലെ നല്ല കർവ്ഡ് ഡിസൈൻ */
+            border-radius: 40px; 
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             width: 100%;
             max-width: 360px;
@@ -45,6 +49,8 @@
             outline: none;
         }
 
+        .btn-wrap { position: relative; width: 100%; }
+
         .btn { 
             width: 100%; 
             padding: 18px; 
@@ -60,14 +66,29 @@
             text-decoration: none;
             display: block;
             transition: 0.2s;
+            position: relative;
         }
         
         .btn:active { transform: scale(0.96); }
 
+        .notif-badge {
+            position: absolute;
+            top: -5px;
+            right: 5px;
+            background: #ff3b3b;
+            color: white;
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 50%;
+            font-weight: bold;
+            border: 2px solid white;
+            display: none;
+            z-index: 10;
+        }
+
         .footer { color: #5d2d91; margin-top: 15px; font-size: 13px; font-weight: 600; }
         .logout-link { font-size: 12px; color: #5d2d91; cursor: pointer; margin-top: 10px; display: block; }
 
-        /* പൊട്ടിത്തെറി എഫക്റ്റ് */
         .particle {
             position: absolute;
             width: 6px;
@@ -92,13 +113,19 @@
         <div id="login-section">
             <h1 id="login-title">Login</h1>
             <input type="number" id="passInput" placeholder="•••••" oninput="if(this.value.length > 5) this.value = this.value.slice(0, 5);">
-            <div id="btn-wrap" style="position:relative;">
+            <div id="login-btn-wrap" style="position:relative;">
                 <button class="btn" id="login-btn" onclick="handleLogin()">Login</button>
             </div>
         </div>
 
         <div id="main-content" style="display: none;">
             <h1>Employee Portal</h1>
+            
+            <div class="btn-wrap">
+                <span id="notice-count" class="notif-badge">0</span>
+                <a href="notice_board.html" class="btn" onclick="clearBadge()">View Notices</a>
+            </div>
+
             <a href="wax_search.html" class="btn">View Wax Weight</a>
             <a href="wa_data.html" class="btn">Work Away Usage</a>
             <a href="location.html" class="btn">Tag QR & Location</a>
@@ -109,9 +136,63 @@
     </div>
 
     <script>
-        window.onload = function() {
-            if (localStorage.getItem("isLoggedIn") === "true") showPortal();
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyB4akOCR4LTOK6HyvnxwMc7SKpbrMzjNC0",
+            authDomain: "compound-workaway.firebaseapp.com",
+            databaseURL: "https://compound-workaway-default-rtdb.firebaseio.com",
+            projectId: "compound-workaway",
+            storageBucket: "compound-workaway.firebasestorage.app",
+            messagingSenderId: "1020479561110",
+            appId: "1:1020479561110:web:f1cb9448e2bcf9184811b7"
         };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        window.onload = function() {
+            if (localStorage.getItem("isLoggedIn") === "true") {
+                showPortal();
+                syncNoticesFromFirebase();
+            }
+        };
+
+        function syncNoticesFromFirebase() {
+            const noticeRef = database.ref('notices');
+            noticeRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                let notices = [];
+                if (data) {
+                    notices = Object.values(data);
+                }
+                
+                // LocalStorage-ലേക്ക് സിങ്ക് ചെയ്യുന്നു (Offline-ലും കാണാൻ)
+                localStorage.setItem('notices', JSON.stringify(notices));
+                updateNoticeBadge(notices);
+            });
+        }
+
+        function updateNoticeBadge(notices) {
+            const lastSeenCount = parseInt(localStorage.getItem('lastSeenNoticeCount')) || 0;
+            const oneMonthAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
+            const activeNotices = notices.filter(n => n.timestamp > oneMonthAgo);
+            
+            const newCount = activeNotices.length - lastSeenCount;
+            const badge = document.getElementById('notice-count');
+
+            if (newCount > 0) {
+                badge.innerText = newCount;
+                badge.style.display = 'block';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+        function clearBadge() {
+            const savedNotices = JSON.parse(localStorage.getItem('notices')) || [];
+            localStorage.setItem('lastSeenNoticeCount', savedNotices.length);
+        }
 
         function handleLogin() {
             const enteredPass = document.getElementById("passInput").value;
@@ -132,6 +213,7 @@
                     if(!savedPass) localStorage.setItem("userPassword", enteredPass);
                     localStorage.setItem("isLoggedIn", "true");
                     showPortal();
+                    syncNoticesFromFirebase();
                 } else {
                     alert("Incorrect PIN!");
                     loginBtn.innerText = "Login";
@@ -141,7 +223,7 @@
         }
 
         function createExplosion() {
-            const wrap = document.getElementById('btn-wrap');
+            const wrap = document.getElementById('login-btn-wrap');
             for (let i = 0; i < 30; i++) {
                 const p = document.createElement('div');
                 p.className = 'particle';
@@ -170,11 +252,13 @@
             if (prompt("Admin Password:") === "1453") window.location.href = "Gist_data_entry.html";
         }
 
-        // Back button protection
         (function() {
             history.pushState({p:1}, "");
             window.onpopstate = function() {
-                if (confirm("Exit App?")) { navigator.app ? navigator.app.exitApp() : window.close(); }
+                if (confirm("Exit App?")) { 
+                    if (navigator.app) navigator.app.exitApp();
+                    else window.close();
+                }
                 else history.pushState({p:1}, "");
             };
         })();
