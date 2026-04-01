@@ -31,7 +31,6 @@
             border: 1px solid #f1f5f9;
         }
         
-        /* പർപ്പിൾ ഗ്രേഡിയന്റ് ടൈറ്റിൽ */
         h1 { 
             text-align: center;
             background: linear-gradient(135deg, #5d2d91 0%, #3d1d61 100%);
@@ -43,11 +42,14 @@
             text-transform: uppercase;
         }
 
-        .input-group { position: relative; margin-bottom: 15px; }
+        .input-group { 
+            position: relative; 
+            margin-bottom: 15px; 
+        }
         
         .input-box { 
             width: 100%; 
-            padding: 16px 15px 16px 50px; 
+            padding: 16px 50px 16px 50px; 
             font-size: 16px; 
             border: 2px solid #f1f5f9; 
             border-radius: 20px; 
@@ -71,6 +73,30 @@
             top: 50%; 
             transform: translateY(-50%); 
             font-size: 20px;
+            color: #64748b;
+        }
+
+        .clear-btn {
+            position: absolute;
+            right: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            font-size: 22px;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 5px;
+            display: none;
+            transition: color 0.2s;
+        }
+
+        .clear-btn:hover {
+            color: #ef4444;
+        }
+
+        .clear-btn.show {
+            display: block;
         }
 
         #suggestions { 
@@ -98,7 +124,6 @@
             color: #5d2d91;
         }
 
-        /* റിസൾട്ട് ബോക്സ് പർപ്പിൾ തീമിൽ */
         #resultBox { 
             display:none; 
             margin-top:25px; 
@@ -145,7 +170,17 @@
         
         <div class="input-group">
             <span class="input-icon">🔍</span>
-            <input type="text" id="mainSearch" class="input-box" placeholder="SEARCH CODE..." oninput="showSuggestions(this.value)">
+            <input 
+                type="text" 
+                id="mainSearch" 
+                class="input-box" 
+                placeholder="SEARCH CODE..." 
+                inputmode="decimal"
+                pattern="[0-9.]*"
+                oninput="showSuggestions(this.value)">
+            
+            <button id="clearBtn" class="clear-btn">✕</button>
+            
             <div id="suggestions" style="display:none;"></div>
         </div>
 
@@ -172,12 +207,45 @@
         const database = firebase.database();
         let db = {};
 
-        database.ref('w').on('value', (snapshot) => { db = snapshot.val() || {}; });
+        database.ref('w').on('value', (snapshot) => { 
+            db = snapshot.val() || {}; 
+        });
+
+        const searchInput = document.getElementById('mainSearch');
+        const clearBtn = document.getElementById('clearBtn');
+
+        // Clear button click
+        clearBtn.addEventListener('click', () => {
+            searchInput.value = '';
+            clearBtn.classList.remove('show');
+            showSuggestions('');
+            searchInput.focus();
+        });
+
+        // Show/Hide clear button when typing
+        searchInput.addEventListener('input', () => {
+            if (searchInput.value.trim() !== '') {
+                clearBtn.classList.add('show');
+            } else {
+                clearBtn.classList.remove('show');
+            }
+        });
 
         function showSuggestions(val) {
             const container = document.getElementById('suggestions');
             const resBox = document.getElementById('resultBox');
-            val = val.toUpperCase().trim();
+            
+            // Only allow numbers and single decimal point
+            val = val.replace(/[^0-9.]/g, '');
+            
+            // Prevent multiple decimal points
+            const parts = val.split('.');
+            if (parts.length > 2) {
+                val = parts[0] + '.' + parts.slice(1).join('');
+            }
+            
+            val = val.trim();
+
             container.innerHTML = '';
             
             if (!val) { 
@@ -186,7 +254,9 @@
                 return; 
             }
 
-            const matches = Object.keys(db).filter(code => code.replace(/_/g, '.').includes(val));
+            const matches = Object.keys(db).filter(code => 
+                code.replace(/_/g, '.').includes(val)
+            );
             
             if (matches.length > 0) {
                 container.style.display = 'block';
@@ -196,7 +266,8 @@
                     div.className = 'suggest-item';
                     div.innerText = displayCode;
                     div.onclick = () => {
-                        document.getElementById('mainSearch').value = displayCode;
+                        searchInput.value = displayCode;
+                        clearBtn.classList.add('show');
                         container.style.display = 'none';
                         document.getElementById('resCode').innerText = displayCode;
                         document.getElementById('resWeight').innerText = db[code];
